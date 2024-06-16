@@ -1,0 +1,148 @@
+proc inverse_ring(def R)
+{
+	int i,j,k;
+	list rl = ringlist(R);
+	int ind = 0;
+	for(i=1;i<=size(rl[3]);i++){
+		// if the block is the module ordering
+		if(rl[3][i][1] == "c"){
+			rl[3][i][1] = "C";
+		}
+		if(rl[3][i][1] == "C"){
+			rl[3][i][1] = "c";
+		}
+		// else
+		// dp <-> Ds, wp <-> Ws (with the variable order reversed)
+		if(rl[3][i][1] == "dp" || rl[3][i][1] == "wp"){
+			list lvar = list();
+			for(j=ind+1;j<=ind+size(rl[3][i][2]);j++){
+				lvar = insert(lvar,rl[2][j]);
+			}
+			for(j=1;j<=size(rl[3][i][2]);j++){
+				rl[2][j+ind] = lvar[j];
+			}
+			ind = ind + size(rl[3][i][2]);
+			kill lvar;
+
+			if(rl[3][i][1] == "dp"){
+				rl[3][i][1] = "Ds";
+			}
+			else{
+				rl[3][i][1] = "Ws";
+				intvec w = rl[3][i][2];
+				for(j=1;j<=size(w);j++){
+					w[j] = rl[3][i][2][size(w)-j+1];
+				}
+				rl[3][i][2] = w;
+			}
+			break;
+		}
+		if(rl[3][i][1] == "Ds" || rl[3][i][1] == "Ws"){
+			list lvar = list();
+			for(j=ind+1;j<=ind+size(rl[3][i][2]);j++){
+				lvar = insert(lvar,rl[2][j]);
+			}
+			for(j=1;j<=size(rl[3][i][2]);j++){
+				rl[2][j+ind] = lvar[j];
+			}
+			ind = ind + size(rl[3][i][2]);
+			kill lvar;
+
+			if(rl[3][i][1] == "Ds"){
+				rl[3][i][1] = "dp";
+			}
+			else{
+				rl[3][i][1] = "wp";
+				intvec w = rl[3][i][2];
+				for(j=1;j<=size(w);j++){
+					w[j] = rl[3][i][2][size(w)-j+1];
+				}
+				rl[3][i][2] = w;
+			}
+			break;
+		}
+		// Dp <-> ds, Wp <-> ws (with the variable order reversed)
+		if(rl[3][i][1] == "Dp" || rl[3][i][1] == "Wp"){
+			list lvar = list();
+			for(j=ind+1;j<=ind+size(rl[3][i][2]);j++){
+				lvar = insert(lvar,rl[2][j]);
+			}
+			for(j=1;j<=size(rl[3][i][2]);j++){
+				rl[2][j+ind] = lvar[j];
+			}
+			ind = ind + size(rl[3][i][2]);
+			kill lvar;
+
+			if(rl[3][i][1] == "Dp"){
+				rl[3][i][1] = "ds";
+			}
+			else{
+				rl[3][i][1] = "ws";
+				intvec w = rl[3][i][2];
+				for(j=1;j<=size(w);j++){
+					w[j] = rl[3][i][2][size(w)-j+1];
+				}
+				rl[3][i][2] = w;
+			}
+			break;
+		}
+		if(rl[3][i][1] == "ds" || rl[3][i][1] == "ws"){
+			list lvar = list();
+			for(j=ind+1;j<=ind+size(rl[3][i][2]);j++){
+				lvar = insert(lvar,rl[2][j]);
+			}
+			for(j=1;j<=size(rl[3][i][2]);j++){
+				rl[2][j+ind] = lvar[j];
+			}
+			ind = ind + size(rl[3][i][2]);
+			kill lvar;
+
+			if(rl[3][i][1] == "Dp"){
+				rl[3][i][1] = "Dp";
+			}
+			else{
+				rl[3][i][1] = "Wp";
+				intvec w = rl[3][i][2];
+				for(j=1;j<=size(w);j++){
+					w[j] = rl[3][i][2][size(w)-j+1];
+				}
+				rl[3][i][2] = w;
+			}
+			break;
+		}
+		// lp <-> ls
+		if(rl[3][i][1] == "lp"){
+			rl[3][i][1] = "ls";
+			break;
+		}
+		if(rl[3][i][1] == "ls"){
+			rl[3][i][1] = "lp";
+			break;
+		}
+		// ip <-> is
+		if(rl[3][i][1] == "ip"){
+			rl[3][i][1] = "is";
+			break;
+		}
+		if(rl[3][i][1] == "is"){
+			rl[3][i][1] = "ip";
+			break;
+		}
+		// matrix ordering
+		if(rl[3][i][1] == "M"){
+			for(j=1;j<=size(rl[3][i][2]);j++){
+				rl[3][i][2][j] = -1*rl[3][i][2][j];
+			}
+			break;
+		}
+		// extra weight vector
+		if(rl[3][i][1] == "a" || rl[3][i][1] == "aa" || rl[3][i][1] == "am"){
+			for(j=1;j<=size(rl[3][i][2]);j++){
+				rl[3][i][2][j] = -1*rl[3][i][2][j];
+			}
+			break;
+		}
+	}
+
+	return(ring(rl));
+}

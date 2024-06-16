@@ -1,0 +1,153 @@
+proc elimdenom(list #)
+{
+	int i, j;
+	if(size(#) != 1){
+		ERROR("Check the number of indices of boundary!");
+	}
+	if(typeof(#[1]) == "vector"){
+		def R = basering;
+		if(npars(R) != 0){
+			def PR = par2varRing(ideal(0))[1];
+			setring PR;
+			poly lcmd = 1;
+			setring R;
+
+			vector f = #[1];
+			poly deno;
+			while(f != 0){
+				deno = denominator(leadcoef(f));
+				setring PR;
+				lcmd = lcm(imap(R,deno),lcmd);
+				setring R;
+				f = f-lead(f);
+			}
+			f = imap(PR,lcmd)*#[1];
+			setring PR;
+			vector f = simplify(imap(R,f),1);
+			setring R;
+			return(imap(PR,f));
+		}
+		else{
+			return(simplify(#[1],1));
+		}
+	}
+	if(typeof(#[1]) == "module"){
+		module M = #[1];
+		for(i=1;i<=size(M);i++){
+			M[i] = elimdenom(M[i]);
+		}
+		return(M);
+	}	
+}
+
+proc reduction_by_ideal(module Q, ideal E)
+{
+	if(size(E) != 0 && npars(basering) != 0){
+		ring R = basering;
+		def PR = par2varRing(list(Q,E))[1];
+		setring PR;
+		if(not(defined(Q))){
+			module Q;
+		}
+		Q = Id[1];
+		if(not(defined(E))){
+			ideal E;
+		}
+		E = Id[2];
+
+		intvec wv = weight(E);
+		def PR'=changeord(list(list("wp",wv)),PR);
+		setring PR';
+		qring Quo = groebner(imap(PR,E));
+		if(not(defined(Q))){
+			module Q;
+		}
+		Q = imap(PR,Q);
+		Q = reduce(Q,std(0));
+		setring R;
+		return(imap(Quo,Q));
+	}
+	else{
+		if(size(E) != 0){
+			return(module(vector(0)));
+		}
+		else{
+			return(Q);
+		}
+	}
+}
+
+proc Adet(list X, ideal E, ideal N, module M1, list Q)
+{
+	int i,j,k,l,m;
+
+	list Lg;
+	module mkE;
+	module HJ0, FL0;
+	list L = list(list(list(HJ0,FL0),list(list(E,N))));
+	list Ln;
+
+	int degAdet = 0;
+	int Adet;
+	list Ld;
+	list LAdet;
+	ideal Ej, Nj;
+	while(size(L) != 0){
+		Ld = list();
+		Ln = list();
+		for(i=1;i<=size(L);i++){
+			module HJi = L[i][1][1];
+			module FL = L[i][1][2];
+			for(j=1;j<=size(L[i][2]);j++){
+				Ej = L[i][2][j][1];
+				Ej = radical_ideal(Ej);
+				Nj = L[i][2][j][2];
+
+				M1 = TRnf + zero*freemodule(ny) + mx^(degAdet+1)*my*freemodule(ny)+mx^(2*degAdet+2)*freemodule(ny);
+				mkE = mx^(degAdet+1)*freemodule(ny);
+				Lg = local_cohomology_mixed_s(X,Ej,Nj,M1,Q,HJi,FL);
+				// test
+				print("degAdet ="), degAdet;
+				Lg;
+
+				for(k=1;k<=size(Lg);k++){
+					Adet = 1;
+					for(l=degAdet+1;l<=2*degAdet+1;l++){
+						mkE = mx^l*freemodule(ny);
+						for(m=1;m<=ncols(mkE);m++){
+							mkE[m] = reduce_cohom(mkE[m],Lg[k][3]);
+							if(mkE[m] != 0){
+								mkE[m] = elimdenom(mkE[m]);
+								mkE[m] = reduction_by_ideal(module(mkE[m]),E)[1];
+								if(mkE[m] != 0){
+									Adet = 0;
+									break;
+								}
+							}
+						}
+					}
+					if(Adet == 1){
+						print("the map germ is"), degAdet, print("-determined!");
+						print("E :");
+						Lg[k][1];
+						print("N :");
+						Lg[k][2];
+
+						Ld = insert(Ld,list(Lg[k][1],Lg[k][2]));
+					}
+					else{
+						Ln = insert(Ln,list(list(Lg[k][3],Lg[k][4]),list(list(Lg[k][1],Lg[k][2]))));
+					}
+				}
+			}
+			kill HJi;
+		}
+		if(size(Ld) != 0){
+			LAdet = insert(LAdet,list(degAdet,Ld));
+		}
+		L = Ln;
+
+		degAdet++;
+	}
+	return(LAdet);
+}

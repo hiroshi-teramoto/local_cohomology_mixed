@@ -1,0 +1,1264 @@
+///////////////////////////////////////////////////////////////////////////////
+version="version psim.lib 4.3.2 May_2024 "; //
+category="Commutative Algebra";
+info="
+LIBRARY:  psim.lib   Compute PsiM 
+AUTHORS:  Hiroshi Teramoto,     teramoto@kansai-u.ac.jp
+
+PROCEDURES:
+ psim(L,I);               computes PsiM
+";
+///////////////////////////////////////////////////////////////////////////////
+
+proc psim (list #)
+"USAGE:   psim(I); # = (list L, I ideal) or (list L, I module).
+RETURN:   PsiM of I on the constructible set L (L[1]=(E,N),...)
+NOTE:
+THEORY:
+EXAMPLE:
+"
+{
+	int i,j,k;
+	if(size(#) != 2 || typeof(#[1]) != "list"){
+		ERROR("Check the indices in psim!");
+	}
+
+	if(typeof(#[2]) == "ideal"){
+		list L = #[1];
+		ideal I = #[2];
+		// construct an ideal A
+		ideal A;
+		for(i=1;i<=ncols(I);i++){
+			for(j=1;j<=size(I[i]);j++){
+				A = A, I[i][j];
+			}
+		}	
+		// calculate comprehensive standard basis of A on each stratum
+		list Lq;
+		list Lcgs, Lcomb;
+		for(i=1;i<=size(L);i++){
+			Lcgs = cgs(L[i][1],L[i][2],A);
+			for(j=1;j<=size(Lcgs);j++){
+				ideal kb = kbase(Lcgs[j][3]);
+				int is_new = 1;
+				for(k=1;k<=size(Lcomb);k++){
+					if(EqualModules(Lcomb[k][1],kb)){
+						is_new = 0;
+						Lcomb[k][2] = insert(Lcomb[k][2],list(Lcgs[j][1],Lcgs[j][2]));
+						break;
+					}
+				}
+				if(is_new){
+					Lcomb = insert(Lcomb,list(kb,list(list(Lcgs[j][1],Lcgs[j][2]))));
+				}
+				kill kb, is_new;
+			}
+		}
+		for(i=1;i<=size(Lcomb);i++){
+			Lcomb[i][2] = addcons(Lcomb[i][2]);
+			/*
+			for(j=1;j<=size(Lcomb[i][2]);j++){
+				Lcomb[i][2][j][1] = radical_ideal(Lcomb[i][2][j][1]);
+				Lcomb[i][2][j][2] = radical_ideal(Lcomb[i][2][j][2]);
+			}
+			*/
+		}
+
+		list Lresult;
+		for(i=1;i<=size(Lcomb);i++){
+			for(j=1;j<=size(Lcomb[i][2]);j++){
+				Lresult = insert(Lresult,list(Lcomb[i][2][j][1],Lcomb[i][2][j][2],Lcomb[i][1]));
+			}
+		}
+		return(Lresult);
+	}
+	if(typeof(#[2]) == "module"){
+		list L = #[1];
+		module I = #[2];
+		// construct a module A
+		module A;
+		for(i=1;i<=ncols(I);i++){
+			vector temp = I[i];
+			while(temp != 0){
+				A = A, lead(temp);
+				temp = temp - lead(temp);
+			}
+			kill temp;
+		}
+		// calculate comprehensive standard basis of A on each stratum
+		list Lq;
+		list Lcgs, Lcomb;
+		for(i=1;i<=size(L);i++){
+			Lcgs = cgs(L[i][1],L[i][2],A);
+			for(j=1;j<=size(Lcgs);j++){
+				module kb = kbase(Lcgs[j][3]);
+				attrib(kb,"rank",nrows(I));
+				int is_new = 1;
+				for(k=1;k<=size(Lcomb);k++){
+					if(EqualModules(Lcomb[k][1],kb)){
+						is_new = 0;
+						Lcomb[k][2] = insert(Lcomb[k][2],list(Lcgs[j][1],Lcgs[j][2]));
+						break;
+					}
+				}
+				if(is_new){
+					Lcomb = insert(Lcomb,list(kb,list(list(Lcgs[j][1],Lcgs[j][2]))));
+				}
+				kill kb, is_new;
+			}
+		}
+		for(i=1;i<=size(Lcomb);i++){
+			Lcomb[i][2] = addcons(Lcomb[i][2]);
+			/*
+			for(j=1;j<=size(Lcomb[i][2]);j++){
+				Lcomb[i][2][j][1] = radical_ideal(Lcomb[i][2][j][1]);
+				Lcomb[i][2][j][2] = radical_ideal(Lcomb[i][2][j][2]);
+			}
+			*/
+		}
+
+		list Lresult;
+		for(i=1;i<=size(Lcomb);i++){
+			for(j=1;j<=size(Lcomb[i][2]);j++){
+				Lresult = insert(Lresult,list(Lcomb[i][2][j][1],Lcomb[i][2][j][2],Lcomb[i][1]));
+			}
+		}
+		return(Lresult);
+	}
+}
+///////////////////////////////////////////////////////////////////////////////
+
+///////////////////////////////////////////////////////////////////////////////
+version="version star.lib 4.3.2 Dec_2024 "; //
+category="Commutative Algebra";
+info="
+LIBRARY:  star.lib   calculate star product between two polynomials or vectors 
+AUTHORS:  Hiroshi Teramoto,     teramoto@kansai-u.ac.jp
+
+PROCEDURES:
+ star(poly p, poly q);              p * q (q is supposed to be in the dual)
+ star(vector p, vector q);              p * q (q is supposed to be in the dual)
+ star(poly p, vector q);              p * q (q is supposed to be in the dual)
+ star(ideal X, poly p, poly q);              p * q (q is supposed to be in the dual)
+ star(ideal X, vector p, vector q);              p * q (q is supposed to be in the dual)
+";
+///////////////////////////////////////////////////////////////////////////////
+
+proc star (list #)
+"USAGE:   star(p,q); p, q poly or p, q vector
+RETURN:   calculate p*q
+NOTE:
+THEORY:
+EXAMPLE:
+"
+{
+	if(size(#) != 2 && size(#) != 3){
+		ERROR("Check the indices of star!");
+	}
+
+	int i,j;
+	if(typeof(#[1]) == "poly" && typeof(#[2]) == "poly"){
+		poly p = #[1];
+		poly q = #[2];
+
+		poly result = 0;
+		for(i=1;i<=size(p);i++){
+			result = result + leadcoef(p[i])*q/leadmonom(p[i]);
+		}
+		kill p, q;
+		return(result);
+	}
+	if(typeof(#[1]) == "vector" && typeof(#[2]) == "vector"){
+		vector p = #[1];
+		vector q = #[2];
+
+		poly result = 0;
+		int mnrows = max(nrows(p),nrows(q));
+		for(i=1;i<=mnrows;i++){
+			if(p[i] != 0 && q[i] != 0){
+				result = result + star(p[i],q[i]);
+			}
+		}
+		return(result);
+	}
+	if(typeof(#[1]) == "poly" && typeof(#[2]) == "vector"){
+		poly p = #[1];
+		vector q = #[2];
+
+		vector result = 0;
+		for(i=1;i<=size(p);i++){
+			result = result + leadcoef(p[i])*q/leadmonom(p[i]);
+		}
+		kill p, q;
+		return(result);
+	}
+	if(typeof(#[1]) == "ideal" && typeof(#[2]) == "poly" && typeof(#[3]) == "poly"){
+		ideal X = #[1];
+		intvec e;
+		for(i=1;i<=size(X);i++){
+			e = e - leadexp(X[i]);
+		}
+		e = e + 1;
+
+		poly p = star(#[2],#[3]);
+		intvec ep;
+		poly result;
+		for(i=1;i<=size(p);i++){
+			ep = leadexp(p[i]);
+			if(transpose(e)*ep == 0){
+				result = result + p[i];
+			}
+		}	
+		return(result);
+	}
+	if(typeof(#[1]) == "ideal" && typeof(#[2]) == "vector" && typeof(#[3]) == "vector"){
+		ideal X = #[1];
+		vector p = #[2];
+		vector q = #[3];
+
+		poly result = 0;
+		int mnrows = max(nrows(p),nrows(q));
+		for(i=1;i<=mnrows;i++){
+			if(p[i] != 0 && q[i] != 0){
+				result = result + star(X,p[i],q[i]);
+			}
+		}
+		return(result);
+	}
+}
+///////////////////////////////////////////////////////////////////////////////
+
+proc leadmonomial(vector p)
+{
+	intvec ep = leadexp(p);
+	return(leadmonom(p)[ep[size(ep)]]);
+}
+
+proc last(list #)
+{
+	if(size(#) != 1 || (typeof(#[1]) != "poly" && typeof(#[1]) != "vector")){
+		ERROR("Check the indices of last!");
+	}
+	def p = #[1];
+	def ptemp = p;
+	while(ptemp != 0){
+		p = lead(ptemp);
+		ptemp = ptemp - lead(ptemp);
+	}
+	return(p);
+}
+
+proc reduce_cohom(list #)
+{
+	int i, j, k;
+	if(size(#) != 2){
+		ERROR("check the number of indices!");
+	}
+	if((typeof(#[1]) == "poly" || typeof(#[1]) == "ideal") && typeof(#[2]) == "ideal"){
+		if(typeof(#[1]) == "poly"){
+			poly h = #[1];
+			ideal HJ = #[2];
+
+			poly resi = 0;
+			for(i=1;i<=size(h);i++){
+				for(j=1;j<=ncols(HJ);j++){
+					for(k=1;k<=size(HJ[j]);k++){
+						if(leadmonom(h[i]) == leadmonom(HJ[j][k])){
+							resi = resi + leadcoef(h[i])*leadcoef(HJ[j][k])*last(HJ[j]);
+							break;
+						}
+					}
+				}
+			}
+			kill h, HJ;
+			return(resi);
+		}
+		else{
+			ideal I = #[1];
+			ideal Ires;
+			for(i=1;i<=ncols(I);i++){
+				Ires[i] = reduce_cohom(I[i],#[2]); 
+			}
+			kill I;
+			return(Ires);
+		}
+	}
+	if((typeof(#[1]) == "vector" || typeof(#[1]) == "module") && typeof(#[2]) == "module"){
+		if(typeof(#[1]) == "vector"){
+			vector h = #[1];
+			module HJ = #[2];
+
+			vector resi = 0;
+			vector htemp = h;
+			while(htemp != 0){
+				for(i=1;i<=ncols(HJ);i++){
+					vector HJi = HJ[i];
+					while(HJi != 0){
+						if(leadmonom(htemp) == leadmonom(HJi)){
+							resi = resi + leadcoef(htemp)*leadcoef(HJi)*last(HJ[i]);
+						}
+						HJi = HJi - lead(HJi);
+					}
+					kill HJi;
+				}
+				htemp = htemp - lead(htemp);
+			}
+			kill h, htemp, HJ;
+			return(resi);
+		}
+		else{
+			module I = #[1];
+			module Ires;
+			for(i=1;i<=ncols(I);i++){
+				Ires[i] = reduce_cohom(I[i],#[2]); 
+			}
+			kill I;
+			return(Ires);
+		}
+	}
+}
+
+// reduce  by elements of HJ in K-vector space
+proc vreduce(list #)
+{
+	int i,j,k;
+
+	if(size(#) != 2){
+		ERROR("check the number of indices of vreduce!");
+	}
+	if(typeof(#[1]) == "poly" && typeof(#[2]) == "ideal"){ 
+		poly p = #[1];
+		ideal HJ = #[2];
+		def R = basering;
+
+		def Ri = inverse_ring(R);
+		setring Ri;
+		poly p = imap(R,p); 
+		ideal HJ = sort(compress(imap(R,HJ)))[1]; 
+		poly rem = 0;
+		for(i=size(HJ);i>=1;i--){
+			while(p != 0 && leadmonom(HJ[i]) < leadmonom(p)){
+				rem = rem + lead(p);
+				p = p - lead(p);
+			} 
+			if(leadmonom(HJ[i]) == leadmonom(p)){
+				p = p - leadcoef(p)/leadcoef(HJ[i])*HJ[i];
+			}
+		}
+		rem = rem + p;
+
+		setring R;
+		poly rem = imap(Ri,rem);
+		return(rem);
+	}
+	if(typeof(#[1]) == "vector" && typeof(#[2]) == "module"){ 
+		vector v = #[1];
+		module HJ = #[2];
+		def R = basering;
+
+		def Ri = inverse_ring(R);
+		setring Ri;
+		vector v = imap(R,v); 
+		module HJ = sort(compress(imap(R,HJ)))[1]; 
+		int reduced = 0;
+		vector rem = 0;
+		for(i=size(HJ);i>=1;i--){
+			while(v != 0 && leadmonom(HJ[i]) < leadmonom(v)){
+				rem = rem + lead(v);
+				v = v - lead(v);
+			} 
+			if(leadmonom(HJ[i]) == leadmonom(v)){
+				v = v - leadcoef(v)/leadcoef(HJ[i])*HJ[i];
+			}
+		}
+		rem = rem + v;
+
+		setring R;
+		vector rem = imap(Ri,rem);
+		return(rem);
+	}
+}
+
+// currently, we do not use b
+proc addNparsTo(def R, int N, string name, int b)
+{
+	int i;
+	list rl = ringlist(R);
+	int np = npars(R);
+	if(np != 0){
+		for(i=1;i<=N;i++){
+			rl[1][2][i+np] = name + "(" + string(i) + ")";
+		}
+	}
+	else{
+		rl[1] = list(0,list(),list(list("dp",1)),ideal(0));
+		for(i=1;i<=N;i++){
+			rl[1][2][i] = name + "(" + string(i) + ")";
+		}
+	}
+	return(ring(rl));
+}
+
+// I should be ideal or module
+// Create the object of the same type as input generated by monomials appearing in each elements of I.
+proc Term(def I){
+	int i,j;
+
+	if(typeof(I) == "ideal"){
+		ideal M;
+		for(i=1;i<=ncols(I);i++){
+			for(j=1;j<=size(I[i]);j++){
+				M = M, ideal(leadmonom(I[i][j]));	
+			}
+		}		
+		M = simplify(M,4);
+		M = sort(compress(M))[1];
+
+		return(M);
+	}
+	if(typeof(I) == "module"){
+		module M;
+		for(i=1;i<=ncols(I);i++){
+			vector temp = I[i];
+			while(temp != 0){
+				M = M, module(leadmonom(temp));
+				temp = temp - lead(temp);
+			}
+			kill temp;
+		}
+		M = simplify(M,4);
+		M = sort(compress(M))[1];
+		attrib(M,"rank",nrows(I));
+
+		return(M);
+	}
+}
+
+// p, q: poly or vector
+proc involutive_multiple(ideal X, def p, def q)
+{
+	int i;
+
+	intvec ep = leadexp(p);
+	intvec eq = leadexp(q);
+	if(typeof(p) == "vector" && typeof(q) == "vector"){
+		if(ep[nvars(basering)+1] != eq[nvars(basering)+1]){
+			return(0);
+		}
+	}
+
+	intvec e = leadexp(1);
+	for(i=1;i<=size(X);i++){
+		e = e + leadexp(X[i]);
+	}
+
+	int invmult = 1;
+	for(i=1;i<=nvars(basering);i++){
+		if(e[i] == 1){
+			if(eq[i] > ep[i]){
+				invmult = 0;
+				break;
+			}
+		}
+		else{
+			if(eq[i] != ep[i]){
+				invmult = 0;
+				break;
+			}	
+		}
+	}
+	return(invmult);
+}
+
+// Q is a list of ideals or that of modules
+// I should be either ideal or module
+// HJ is supposed to be local cohomology of equal or bigger than I, Q in V(E)\V(N) (put 0 if you don't know)
+proc local_cohomology_mixed(list X, ideal E, ideal N, def I, list Q, list #)
+{
+	int i,j,k,l,m,n;
+	newstruct("iList","ideal E, ideal N, ideal hlist, ideal hj, ideal fl, ideal tclist");
+	newstruct("mList","ideal E, ideal N, module hlist, module hj, module fl, module tclist");
+	ideal Xint = maxideal(1);
+	for(i=1;i<=size(X);i++){
+		Xint = set_intersect(Xint,X[i]);
+	}
+	Xint = std(Xint);
+
+	// new (case if I (module) is standard basis)
+	if(typeof(I) == "module" && attrib(I,"isSB")){
+		module HJ, FL;
+		if(size(#) == 1){
+			HJ = #[1];
+		}
+		if(size(#) == 2){
+			HJ = #[1];
+			FL = #[2];
+		}
+
+		list L = list(list(E,N)); // initial constructible set
+		list List;
+
+		list PsiM = psim(L,I);
+		module kbaseI = kbase(I);
+		for(i=1;i<=ncols(kbaseI);i++){
+			for(j=1;j<=size(Q);j++){
+				module TQj = Term(Q[j]);
+				for(k=1;k<=ncols(TQj);k++){
+					if(involutive_multiple(X[j],kbaseI[i],TQj[k])){
+						kbaseI[i] = 0;
+						break;
+					}
+				}
+				kill TQj;
+				if(kbaseI[i] == 0){
+					break;
+				}
+			}
+		}
+		kbaseI = compress(kbaseI);
+
+		module kbase_mixedHJ = kbase_mixed(HJ);
+		for(i=1;i<=size(PsiM);i++){
+			mList Li;
+			Li.E = PsiM[i][1];
+			Li.N = PsiM[i][2];
+
+			module TCList = set_minus(PsiM[i][3],kbaseI);
+			TCList = set_minus(kbase_mixedHJ,TCList);
+
+			for(j=1;j<=ncols(PsiM[i][3]);j++){
+				for(k=1;k<=size(Q);k++){
+					module TQk = Term(Q[k]);
+					for(l=1;l<=ncols(TQk);l++){
+						if(involutive_multiple(X[k],PsiM[i][3][j],TQk[l])){
+							PsiM[i][3][j] = 0;
+							break;
+						}
+					}
+					kill TQk;
+					if(PsiM[i][3][j] == 0){
+						break;
+					}
+				}
+			}
+			PsiM[i][3] = compress(PsiM[i][3]);
+
+			for(j=1;j<=ncols(TCList);j++){
+				for(k=1;k<=size(Q);k++){
+					for(l=1;l<=ncols(Q[k]);l++){
+						if(involutive_multiple(X[k],TCList[j],lead(Q[k][l]))){
+							TCList[j] = 0;
+							break;
+						}
+					}
+					if(TCList[j] == 0){
+						break;
+					}
+				}
+			}
+
+			// removing terms in tclist that is Xint-involutive multiple of FL 
+			for(j=1;j<=size(FL);j++){
+				for(k=1;k<=ncols(TCList);k++){
+					if(involutive_multiple(Xint,TCList[k],FL[j])){
+						TCList[k] = 0;
+					}
+				}
+			}
+			TCList = compress(TCList);
+
+			def R = basering;
+			def Ri = inverse_ring(R);
+			setring Ri;
+			module TCList = imap(R,TCList);
+			TCList = sortier(TCList);
+			setring R;
+			Li.tclist = compress(imap(Ri,TCList));
+			kill R, Ri;
+
+			Li.hj = PsiM[i][3], HJ;
+			Li.hlist = PsiM[i][3], kbase_mixedHJ;
+			Li.fl = FL;
+			Li.hj = compress(simplify(Li.hj,4));
+			Li.hlist = compress(simplify(Li.hlist,4));
+
+			List[i] = Li;
+
+			kill Li;
+		}
+
+		int finished = 0;
+		int ni;
+		ideal Ei, Ni;
+		while(!finished){
+			for(i=1;i<=size(List);i++){
+				Ei = List[i].E;
+				Ni = List[i].N;
+				if(size(List[i].tclist) != 0){
+					vector can = List[i].tclist[1];
+					List[i].tclist[1] = 0;
+					List[i].tclist = compress(List[i].tclist);
+
+					if(find(option(),"prot") != 0){
+						print("can ="), can;
+						print("Computing lower!");
+					}
+
+					list Lr = generate_relations(X,I,Q,can);
+					for(j=1;j<=size(Lr[1].keys);j++){
+						if(containedQ(List[i].hlist,Lr[1].keys[j])){
+							Lr[2] = insert(Lr[2],list(list(1,Lr[1].values[j])));
+						}
+					}
+
+					if(find(option(),"prot") != 0){
+						print("Computation of  lower was successfully finished!!");
+						Lr[1].keys;
+					}
+
+					list relations = Lr[2];
+					ni = size(Lr[1].keys);
+					def R = basering;
+					if(ni != 0){
+						def RP = addNvarsTo(R,ni,"@",0);
+						setring RP;
+						if(find(option(),"prot") != 0){
+							print("Finding conditions for the coefficients of the candidate solution!!");
+						}
+
+						list relations = imap(R,relations);
+						ideal zero;
+						zero[1] = @(1)-1;
+						for(k=1;k<=size(relations);k++){
+							zero[k+1] = 0;
+							for(l=1;l<=size(relations[k]);l++){
+								zero[k+1] = zero[k+1] + relations[k][l][1]*@(relations[k][l][2]);
+							}
+						}
+
+						if(find(option(),"prot") != 0){
+							print("Finding conditions for the coefficients of the candidate solution was successfully finished!!");
+							print("Solving for the coefficents");
+						}
+
+						ideal Ei = imap(R,Ei);
+						ideal Ni = imap(R,Ni);
+						list Lg = cgs(Ei,Ni,zero);
+						ideal at = @(1..ni);
+						list sols;
+						for(k=1;k<=size(Lg);k++){
+							sols[k] = list(Lg[k][1],Lg[k][2],reduce(at,Lg[k][3]));
+						}
+
+						setring R;
+						list sols = imap(RP,sols);
+						for(k=1;k<=size(sols);k++){
+							mList Lnew = List[i];
+							Lnew.E = sols[k][1];
+							Lnew.N = sols[k][2];
+
+							if(size(sols[k][3]) != 0){
+								vector psi; 
+								for(l=1;l<=ni;l++){
+									psi = psi + sols[k][3][Lr[1].values[l]]*Lr[1].keys[l];
+								}
+
+								if(find(option(),"prot") != 0){
+									print("sol ="), sols[k][3];
+									print("psi ="), psi;
+								}
+
+								Lnew.hj = Lnew.hj, psi;
+								Lnew.hj = compress(Lnew.hj);
+
+								Lnew.hlist = Lnew.hlist, can;
+								Lnew.hlist = compress(Lnew.hlist);
+
+								kill psi;
+							}
+							else{
+								// removing terms in tclist that is X-involutive multiple of can
+								for(l=1;l<=ncols(Lnew.tclist);l++){
+									if(involutive_multiple(Xint,Lnew.tclist[l],can)){
+										Lnew.tclist[l] = 0;
+									}
+								}
+								Lnew.tclist = compress(Lnew.tclist);
+								Lnew.fl = Lnew.fl, can;
+								Lnew.fl = compress(Lnew.fl);
+							}
+							List = insert(List,Lnew,size(List));
+							kill Lnew;
+						}
+						kill sols; 
+						kill RP;
+					}
+					else{
+						mList Lnew = List[i];
+						// removing terms in tclist that is X-involutive multiple of can
+						for(k=1;k<=ncols(Lnew.tclist);k++){
+							if(involutive_multiple(Xint,Lnew.tclist[k],can)){
+								Lnew.tclist[k] = 0;
+							}
+						}
+						Lnew.tclist = compress(Lnew.tclist);
+						Lnew.fl = Lnew.fl, can;
+						Lnew.fl = compress(Lnew.fl);
+
+						List = insert(List,Lnew,size(List));
+					}
+					List = delete(List,i);
+					kill can, R, Lr, relations;
+				}
+			}
+			finished = 1;
+			for(i=1;i<=size(List);i++){
+				if(size(List[i].tclist) != 0){
+					finished = 0;
+				}
+			}
+		}
+
+		list Lcgs;
+		for(i=1;i<=size(List);i++){
+			Lcgs = insert(Lcgs,list(List[i].E,List[i].N,List[i].hj,List[i].fl));
+		}
+		return(Lcgs);
+	}
+	// new (case if I (module) is standard basis)
+	if(typeof(I) == "ideal" && attrib(I,"isSB")){
+		ideal HJ, FL;
+		if(size(#) == 1){
+			HJ = #[1];
+		}
+		if(size(#) == 2){
+			HJ = #[1];
+			FL = #[2];
+		}
+
+		list L = list(list(E,N)); // initial constructible set
+		list List;
+
+		list PsiM = psim(L,I);
+		ideal kbaseI = kbase(I);
+		for(i=1;i<=ncols(kbaseI);i++){
+			for(j=1;j<=size(Q);j++){
+				ideal TQj = Term(Q[j]);
+				for(k=1;k<=ncols(TQj);k++){
+					if(involutive_multiple(X[j],kbaseI[i],TQj[k])){
+						kbaseI[i] = 0;
+						break;
+					}
+				}
+				kill TQj;
+				if(kbaseI[i] == 0){
+					break;
+				}
+			}
+		}
+		kbaseI = compress(kbaseI);
+
+		module kbase_mixedHJ = kbase_mixed(HJ);
+		for(i=1;i<=size(PsiM);i++){
+			iList Li;
+			Li.E = PsiM[i][1];
+			Li.N = PsiM[i][2];
+
+			ideal TCList = set_minus(PsiM[i][3],kbaseI);
+			TCList = set_minus(kbase_mixedHJ,TCList);
+
+			for(j=1;j<=ncols(PsiM[i][3]);j++){
+				for(k=1;k<=size(Q);k++){
+					ideal TQk = Term(Q[k]);
+					for(l=1;l<=ncols(TQk);l++){
+						if(involutive_multiple(X[k],PsiM[i][3][j],TQk[l])){
+							PsiM[i][3][j] = 0;
+							break;
+						}
+					}
+					kill TQk;
+					if(PsiM[i][3][j] == 0){
+						break;
+					}
+				}
+			}
+			PsiM[i][3] = compress(PsiM[i][3]);
+
+			for(j=1;j<=ncols(TCList);j++){
+				for(k=1;k<=size(Q);k++){
+					for(l=1;l<=ncols(Q[k]);l++){
+						if(involutive_multiple(X[k],TCList[j],lead(Q[k][l]))){
+							TCList[j] = 0;
+							break;
+						}
+					}
+					if(TCList[j] == 0){
+						break;
+					}
+				}
+			}
+
+			// removing terms in tclist that is Xint-involutive multiple of FL 
+			for(j=1;j<=size(FL);j++){
+				for(k=1;k<=ncols(TCList);k++){
+					if(involutive_multiple(Xint,TCList[k],FL[j])){
+						TCList[k] = 0;
+					}
+				}
+			}
+			TCList = compress(TCList);
+
+			def R = basering;
+			def Ri = inverse_ring(R);
+			setring Ri;
+			ideal TCList = imap(R,TCList);
+			TCList = sortier(TCList);
+			setring R;
+			Li.tclist = compress(imap(Ri,TCList));
+			kill R, Ri;
+
+			Li.hj = PsiM[i][3], HJ;
+			Li.hlist = PsiM[i][3], kbase_mixedHJ;
+			Li.fl = FL;
+			Li.hj = compress(simplify(Li.hj,4));
+			Li.hlist = compress(simplify(Li.hlist,4));
+
+			List[i] = Li;
+
+			kill Li;
+		}
+
+		int finished = 0;
+		int ni;
+		ideal Ei, Ni;
+		while(!finished){
+			for(i=1;i<=size(List);i++){
+				Ei = List[i].E;
+				Ni = List[i].N;
+				if(size(List[i].tclist) != 0){
+					poly can = List[i].tclist[1];
+					List[i].tclist[1] = 0;
+					List[i].tclist = compress(List[i].tclist);
+
+					if(find(option(),"prot") != 0){
+						print("can ="), can;
+						print("Computing lower!");
+					}
+
+					list Lr = generate_relations(X,I,Q,can);
+					for(j=1;j<=size(Lr[1].keys);j++){
+						if(containedQ(List[i].hlist,Lr[1].keys[j])){
+							Lr[2] = insert(Lr[2],list(list(1,Lr[1].values[j])));
+						}
+					}
+
+					if(find(option(),"prot") != 0){
+						print("Computation of  lower was successfully finished!!");
+						Lr[1].keys;
+					}
+
+					list relations = Lr[2];
+					ni = size(Lr[1].keys);
+					def R = basering;
+					if(ni != 0){
+						def RP = addNvarsTo(R,ni,"@",0);
+						setring RP;
+						if(find(option(),"prot") != 0){
+							print("Finding conditions for the coefficients of the candidate solution!!");
+						}
+
+						list relations = imap(R,relations);
+						ideal zero;
+						zero[1] = @(1)-1;
+						for(k=1;k<=size(relations);k++){
+							zero[k+1] = 0;
+							for(l=1;l<=size(relations[k]);l++){
+								zero[k+1] = zero[k+1] + relations[k][l][1]*@(relations[k][l][2]);
+							}
+						}
+
+						if(find(option(),"prot") != 0){
+							print("Finding conditions for the coefficients of the candidate solution was successfully finished!!");
+							print("Solving for the coefficents");
+						}
+
+						ideal Ei = imap(R,Ei);
+						ideal Ni = imap(R,Ni);
+						list Lg = cgs(Ei,Ni,zero);
+						ideal at = @(1..ni);
+						list sols;
+						for(k=1;k<=size(Lg);k++){
+							sols[k] = list(Lg[k][1],Lg[k][2],reduce(at,Lg[k][3]));
+						}
+
+						setring R;
+						list sols = imap(RP,sols);
+						for(k=1;k<=size(sols);k++){
+							iList Lnew = List[i];
+							Lnew.E = sols[k][1];
+							Lnew.N = sols[k][2];
+
+							if(size(sols[k][3]) != 0){
+								poly psi; 
+								for(l=1;l<=ni;l++){
+									psi = psi + sols[k][3][Lr[1].values[l]]*Lr[1].keys[l];
+								}
+
+								if(find(option(),"prot") != 0){
+									print("sol ="), sols[k][3];
+									print("psi ="), psi;
+								}
+
+								Lnew.hj = Lnew.hj, psi;
+								Lnew.hj = compress(Lnew.hj);
+
+								Lnew.hlist = Lnew.hlist, can;
+								Lnew.hlist = compress(Lnew.hlist);
+
+								kill psi;
+							}
+							else{
+								// removing terms in tclist that is X-involutive multiple of can
+								for(l=1;l<=ncols(Lnew.tclist);l++){
+									if(involutive_multiple(Xint,Lnew.tclist[l],can)){
+										Lnew.tclist[l] = 0;
+									}
+								}
+								Lnew.tclist = compress(Lnew.tclist);
+								Lnew.fl = Lnew.fl, can;
+								Lnew.fl = compress(Lnew.fl);
+							}
+							List = insert(List,Lnew,size(List));
+							kill Lnew;
+						}
+						kill sols; 
+						kill RP;
+					}
+					else{
+						iList Lnew = List[i];
+						// removing terms in tclist that is X-involutive multiple of can
+						for(k=1;k<=ncols(Lnew.tclist);k++){
+							if(involutive_multiple(Xint,Lnew.tclist[k],can)){
+								Lnew.tclist[k] = 0;
+							}
+						}
+						Lnew.tclist = compress(Lnew.tclist);
+						Lnew.fl = Lnew.fl, can;
+						Lnew.fl = compress(Lnew.fl);
+
+						List = insert(List,Lnew,size(List));
+					}
+					List = delete(List,i);
+					kill can, R, Lr, relations;
+				}
+			}
+			finished = 1;
+			for(i=1;i<=size(List);i++){
+				if(size(List[i].tclist) != 0){
+					finished = 0;
+				}
+			}
+		}
+
+		list Lcgs;
+		for(i=1;i<=size(List);i++){
+			Lcgs = insert(Lcgs,list(List[i].E,List[i].N,List[i].hj,List[i].fl));
+		}
+		return(Lcgs);
+	}
+}
+
+// I should be either ideal or module
+proc local_cohomology_mixed_s(list X, ideal E, ideal N, def I, list Q, list #)
+{
+	if(!attrib(I,"isSB")){
+		list Lc, Lg;
+
+	}
+}
+
+// I should be either ideal or module
+proc local_cohomology_mixed_s(list X, ideal E, ideal N, def I, list Q, list #)
+{
+	if(!attrib(I,"isSB")){
+		list Lc, Lg;
+		Lg = cgs(E,N,I);
+		int i;
+		for(i=1;i<=size(Lg);i++){
+			if(size(#) == 0){
+				Lc = Lc + local_cohomology_mixed(X,Lg[i][1],Lg[i][2],Lg[i][3],Q);
+			}
+			else{
+				Lc = Lc + local_cohomology_mixed(X,Lg[i][1],Lg[i][2],Lg[i][3],Q,#[1]);
+			}
+		}
+		return(Lc);
+	}
+	if(attrib(I,"isSB")){
+		if(size(#) == 0){
+			return(local_cohomology_mixed(X,E,N,I,Q));
+		}
+		else{
+			return(local_cohomology_mixed(X,E,N,I,Q,#[1]));
+		}
+	}
+}
+
+proc kbase_mixed(def HJ)
+{
+	def R = basering;
+
+	def Ri = inverse_ring(R);
+	setring Ri;
+	def HList = lead(imap(R,HJ));
+
+	setring R;
+	return(imap(Ri,HList));
+}
+
+// Q is a list of ideals or that of modules
+// I should be either ideal or module
+proc local_cohomology_mixed_op(list X, ideal E, ideal N, def I, list Q)
+{
+	int i,j,k,l,m,n;
+	newstruct("iList","ideal E, ideal N, ideal hlist, ideal hj, ideal tclist");
+	newstruct("mList","ideal E, ideal N, module hlist, module hj, module tclist");
+	ideal Xint = maxideal(1);
+	for(i=1;i<=size(X);i++){
+		Xint = set_intersect(Xint,X[i]);
+	}
+	Xint = std(Xint);
+
+	// new (case if I (module) is standard basis)
+	if(typeof(I) == "module" && attrib(I,"isSB")){
+		list L = list(list(E,N)); // initial constructible set
+		list List;
+
+		list PsiM = psim(L,I);
+		for(i=1;i<=size(PsiM);i++){
+			for(j=1;j<=ncols(PsiM[i][3]);j++){
+				for(k=1;k<=size(Q);k++){
+					for(l=1;l<=ncols(Q[k]);l++){
+						if(involutive_multiple(X[k],PsiM[i][3][j],Q[k][l])){
+							PsiM[i][3][j] = 0;
+							break;
+						}
+					}
+					if(PsiM[i][3][j] == 0){
+						break;
+					}
+				}
+			}
+			PsiM[i][3] = compress(PsiM[i][3]);
+		}
+		module kbaseI = kbase(I);
+		for(i=1;i<=ncols(kbaseI);i++){
+			for(j=1;j<=size(Q);j++){
+				for(k=1;k<=ncols(Q[j]);k++){
+					if(involutive_multiple(X[j],kbaseI[i],Q[j][k])){
+						kbaseI[i] = 0;
+						break;
+					}
+				}
+				if(kbaseI[i] == 0){
+					break;
+				}
+			}
+		}
+		kbaseI = compress(kbaseI);
+
+		for(i=1;i<=size(PsiM);i++){
+			mList Li;
+			Li.E = PsiM[i][1];
+			Li.N = PsiM[i][2];
+
+			module TCList = set_minus(PsiM[i][3],kbaseI);	
+			TCList = sortier(TCList);
+			Li.tclist = compress(TCList);
+
+			Li.hj = PsiM[i][3];
+			Li.hlist = PsiM[i][3];
+
+			List[i] = Li;
+
+			kill Li;
+		}
+
+		int finished = 0;
+		int ni;
+		ideal Ei, Ni;
+		while(!finished){
+			for(i=1;i<=size(List);i++){
+				Ei = List[i].E;
+				Ni = List[i].N;
+				if(size(List[i].tclist) != 0){
+					vector can = List[i].tclist[1];
+					List[i].tclist[1] = 0;
+					List[i].tclist = compress(List[i].tclist);
+
+					if(find(option(),"prot") != 0){
+						print("can ="), can;
+						print("Computing lower!");
+					}
+
+					list Lr = generate_relations(I,can);
+					for(j=1;j<=size(Lr[1].keys);j++){
+						for(k=1;k<=size(Q);k++){
+							for(l=1;l<=ncols(Q[k]);l++){
+								if(Q[k][l] != lead(Q[k][l])){
+									break;
+								}
+								if(involutive_multiple(X[k],Lr[1].keys[j],Q[k][l])){
+									Lr[2] = insert(Lr[2],list(list(1,Lr[1].values[j])));
+									k = size(Q)+1;
+									break;
+								}
+							}
+						}
+						if(Lr[1].keys[j] != can && involutive_multiple(Xint,can,Lr[1].keys[j])){
+							Lr[2] = insert(Lr[2],list(list(1,Lr[1].values[j])));
+						}
+					}
+
+					if(find(option(),"prot") != 0){
+						print("Computation of  lower was successfully finished!!");
+						Lr[1].keys;
+					}
+
+					list relations = Lr[2];
+					ni = size(Lr[1].keys);
+					def R = basering;
+					if(ni != 0){
+						def RP = addNvarsTo(R,ni,"@",0);
+						setring RP;
+						if(find(option(),"prot") != 0){
+							print("Finding conditions for the coefficients of the candidate solution!!");
+						}
+
+						list relations = imap(R,relations);
+						ideal zero;
+						zero[1] = @(1)-1;
+						for(k=1;k<=size(relations);k++){
+							zero[k+1] = 0;
+							for(l=1;l<=size(relations[k]);l++){
+								zero[k+1] = zero[k+1] + relations[k][l][1]*@(relations[k][l][2]);
+							}
+						}
+
+						if(find(option(),"prot") != 0){
+							print("Finding conditions for the coefficients of the candidate solution was successfully finished!!");
+							print("Solving for the coefficents");
+						}
+
+						ideal Ei = imap(R,Ei);
+						ideal Ni = imap(R,Ni);
+						list Lg = cgs(Ei,Ni,zero);
+						ideal at = @(1..ni);
+						list sols;
+						for(k=1;k<=size(Lg);k++){
+							sols[k] = list(Lg[k][1],Lg[k][2],reduce(at,Lg[k][3]));
+						}
+
+						setring R;
+						list sols = imap(RP,sols);
+						for(k=1;k<=size(sols);k++){
+							mList Lnew = List[i];
+							Lnew.E = sols[k][1];
+							Lnew.N = sols[k][2];
+
+							if(size(sols[k][3]) != 0){
+								vector psi; 
+								for(l=1;l<=ni;l++){
+									psi = psi + sols[k][3][Lr[1].values[l]]*Lr[1].keys[l];
+								}
+
+								if(find(option(),"prot") != 0){
+									print("sol ="), sols[k][3];
+									print("psi ="), psi;
+								}
+
+								Lnew.hj = Lnew.hj, psi;
+								Lnew.hlist = Lnew.hlist, can;
+								int dg = deg(can);
+								for(l=1;l<=dg;l++){
+									ideal ml = Xint^l;
+									for(m=1;m<=size(ml);m++){
+										vector mlpsi = star(ml[m],psi);
+										vector lmlpsi;
+										mlpsi = vreduce(mlpsi,Lnew.hj);
+										if(mlpsi != 0){
+											def Ri = inverse_ring(R);
+											setring Ri;
+											vector mlpsi = imap(R,mlpsi); 
+											mlpsi = mlpsi/leadcoef(mlpsi);
+											vector lmlpsi = lead(mlpsi);
+											setring R;
+											mlpsi = imap(Ri,mlpsi);
+											lmlpsi = imap(Ri,lmlpsi);
+
+											Lnew.hj = Lnew.hj, mlpsi;
+											Lnew.hlist = Lnew.hlist, lmlpsi;
+											kill Ri;
+										}
+										kill mlpsi, lmlpsi;
+									}
+									kill ml;
+								}
+								Lnew.hj = compress(Lnew.hj);
+								Lnew.hlist = compress(Lnew.hlist);
+
+								for(l=1;l<=ncols(Lnew.tclist);l++){
+									if(containedQ(Lnew.hlist,Lnew.tclist[l])){
+										Lnew.tclist[l] = 0;
+									}
+								}
+								Lnew.tclist = compress(Lnew.tclist);
+								
+								kill psi;
+							}
+							else{
+								// removing terms in tclist that is X-involutive multiple of can
+								for(l=1;l<=size(Lnew.tclist);l++){
+									if(involutive_multiple(Xint,Lnew.tclist[l],can)){
+										Lnew.tclist[l] = 0;
+									}
+								}
+								Lnew.tclist = compress(Lnew.tclist);
+							}
+							List = insert(List,Lnew,size(List));
+							kill Lnew;
+						}
+						kill sols; 
+						kill RP;
+					}
+					else{
+						mList Lnew = List[i];
+						// removing terms in tclist that is X-involutive multiple of can
+						for(k=1;k<=size(Lnew.tclist);k++){
+							if(involutive_multiple(Xint,Lnew.tclist[k],can)){
+								Lnew.tclist[k] = 0;
+							}
+						}
+						Lnew.tclist = compress(Lnew.tclist);
+
+						List = insert(List,Lnew,size(List));
+					}
+					List = delete(List,i);
+					kill can, R, Lr, relations;
+				}
+			}
+			finished = 1;
+			for(i=1;i<=size(List);i++){
+				if(size(List[i].tclist) != 0){
+					finished = 0;
+				}
+			}
+		}
+
+		list Lcgs;
+		for(i=1;i<=size(List);i++){
+			Lcgs = insert(Lcgs,list(List[i].E,List[i].N,List[i].hj));
+		}
+		return(Lcgs);
+	}
+}

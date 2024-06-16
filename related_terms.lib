@@ -1,0 +1,302 @@
+// compute I2-I1
+// I1 and I2 should be the same type, either ideal or module
+proc set_minus(def I1, def I2)
+{
+	if(size(I1) == 0){
+		return(I2);
+	}
+	else{
+		int n1 = ncols(I1);
+		int n2 = ncols(I2);
+		def I = I1;
+		I = I, I2;
+		I = simplify(I,4);
+		I = I[n1+1..n1+n2];
+
+		return(compress(I));
+	}
+}
+
+// compute the set intersection between I1 and I2
+proc set_intersect(def I1, def I2)
+{
+	if(size(I1) == 0 || size(I2) == 0){
+		return(compress(I1));
+	}
+	else{
+		return(set_minus(set_minus(I2,I1),I1));
+	}
+}
+
+// p, a candidate for the head term, I, module or ideal
+// output relations between terms equal to or larger than p
+proc generate_relations(list X, def I, list Q, def p){
+	int i,j,k,l,m,n;
+
+	ass_con as;
+	as = insert_ass(as,p,1);
+	int ind = 2;
+
+	poly sIp;
+	def Ii = p;
+	list relations;
+	list queue;
+	for(i=1;i<=ncols(I);i++){
+		sIp = star(I[i],p);
+		for(j=1;j<=size(sIp);j++){
+			list relation;
+			Ii = I[i];
+			while(Ii != 0){
+				def v = lead(Ii)*sIp[j];
+				poly lcv = leadcoef(v);
+				def lmv = v/lcv;
+				if(p <= lmv){
+					list fa = find_ass(as,lmv);
+					if(fa[1] == 0){
+						as = insert_ass(as,lmv,ind);
+						relation = insert(relation,list(lcv,ind));
+						queue = insert(queue,list(0,i,lmv,sIp[j]/leadcoef(sIp[j])));
+						ind++;
+					}	
+					else{
+						relation = insert(relation,list(lcv,as.values[fa[2]]));
+					}
+					kill fa;
+				}
+				Ii = Ii - lead(Ii);
+				kill v, lcv, lmv;
+			}	
+			relations = insert(relations,relation);
+
+			kill relation;
+		}
+	}
+
+	for(n=1;n<=size(Q);n++){
+		for(i=1;i<=size(Q[n]);i++){
+			sIp = star(X[n],Q[n][i],p);
+			for(j=1;j<=size(sIp);j++){
+				list relation;
+				Ii = Q[n][i];
+				while(Ii != 0){
+					def v = lead(Ii)*sIp[j];
+					poly lcv = leadcoef(v);
+					def lmv = v/lcv;
+					if(p <= lmv){
+						list fa = find_ass(as,lmv);
+						if(fa[1] == 0){
+							as = insert_ass(as,lmv,ind);
+							relation = insert(relation,list(lcv,ind));
+							queue = insert(queue,list(n,i,lmv,sIp[j]/leadcoef(sIp[j])));
+							ind++;
+						}
+						else{
+							relation = insert(relation,list(lcv,as.values[fa[2]]));
+						}
+						kill fa;
+					}
+					Ii = Ii - lead(Ii);
+					kill v, lcv, lmv;
+				}	
+				relations = insert(relations,relation);
+
+				kill relation;
+			}
+		}
+	}
+
+	int in, ith;
+	while(size(queue) != 0){
+		ith = queue[1][1];
+		in = queue[1][2];
+		def q = queue[1][3];
+		sIp = queue[1][4];
+		queue = delete(queue,1);
+		for(i=1;i<=ncols(I);i++){
+			poly sIq = star(I[i],q);
+			for(j=1;j<=size(sIq);j++){
+				if(ith != 0 || i != in || sIq[j]/leadcoef(sIq[j]) != sIp){
+					list relation;
+					Ii = I[i];
+					while(Ii != 0){
+						def v = lead(Ii)*sIq[j];
+						poly lcv = leadcoef(v);
+						def lmv = v/lcv;
+						if(p <= lmv){
+							list fa = find_ass(as,lmv);
+							if(fa[1] == 0){
+								as = insert_ass(as,lmv,ind);
+								relation = insert(relation,list(lcv,ind));
+								queue = insert(queue,list(0,i,lmv,sIq[j]/leadcoef(sIq[j])));
+								ind++;
+							}
+							else{
+								relation = insert(relation,list(lcv,as.values[fa[2]]));
+							}
+							kill fa;
+						}
+						Ii = Ii - lead(Ii);
+
+						kill v, lcv, lmv;
+					}
+					relations = insert(relations,relation);
+
+					kill relation;
+				}
+			}
+			kill sIq;
+		}
+
+		for(n=1;n<=size(Q);n++){
+			for(i=1;i<=ncols(Q[n]);i++){
+				poly sIq = star(X[n],Q[n][i],q);
+				for(j=1;j<=size(sIq);j++){
+					if(ith != n || i != in || sIq[j]/leadcoef(sIq[j]) != sIp){
+						list relation;
+						Ii = Q[n][i];
+						while(Ii != 0){
+							def v = lead(Ii)*sIq[j];
+							poly lcv = leadcoef(v);
+							def lmv = v/lcv;
+							if(p <= lmv){
+								list fa = find_ass(as,lmv);
+								if(fa[1] == 0){
+									as = insert_ass(as,lmv,ind);
+									relation = insert(relation,list(lcv,ind));
+									queue = insert(queue,list(n,i,lmv,sIq[j]/leadcoef(sIq[j])));
+									ind++;
+								}
+								else{
+									relation = insert(relation,list(lcv,as.values[fa[2]]));
+								}
+								kill fa;
+							}
+							Ii = Ii - lead(Ii);
+
+							kill v, lcv, lmv;
+						}
+						relations = insert(relations,relation);
+
+						kill relation;
+					}
+				}
+				kill sIq;
+			}
+		}
+
+		kill q;
+	}
+
+	return(list(as,relations));
+}
+
+proc is_exclusive(def v, def hlist, list X, list Q)
+{
+	int i,j,k;
+
+	if(containedQ(hlist,v)){
+		return(1);
+	}
+
+	for(i=1;i<=size(Q);i++){
+		for(j=1;j<=ncols(Q[i]);j++){
+			if(Q[i][j] != lead(Q[i][j])){
+				break;
+			}
+			if(involutive_multiple(X[i],v,Q[i][j])){
+				return(1);
+			}
+		}
+	}
+	return(0);
+}
+
+// p, a candidate for the head term, I, module or ideal
+// output relations between terms equal to or larger than p
+proc generate_relations_excluding_terms(def I, def p, def hlist, list X, list Q){
+	int i,j,k,l;
+
+	ass_con as;
+	as = insert_ass(as,p,1);
+	int ind = 2;
+
+	poly sIp;
+	def Ii = p;
+	list relations;
+	list queue;
+	for(i=1;i<=ncols(I);i++){
+		sIp = star(I[i],p);
+		for(j=1;j<=size(sIp);j++){
+			list relation;
+			Ii = I[i];
+			while(Ii != 0){
+				def v = lead(Ii)*sIp[j];
+				poly lcv = leadcoef(v);
+				def lmv = v/lcv;
+				if(p <= lmv){
+					list fa = find_ass(as,lmv);
+					if(fa[1] == 0 && !is_exclusive(lmv,hlist,X,Q)){
+						as = insert_ass(as,lmv,ind);
+						relation = insert(relation,list(lcv,ind));
+						queue = insert(queue,list(i,lmv,sIp[j]/leadcoef(sIp[j])));
+						ind++;
+					}	
+					else{
+						relation = insert(relation,list(lcv,as.values[fa[2]]));
+					}
+					kill fa;
+				}
+				Ii = Ii - lead(Ii);
+				kill v, lcv, lmv;
+			}	
+			relations = insert(relations,relation);
+
+			kill relation;
+		}
+	}
+
+	int in;
+	while(size(queue) != 0){
+		in = queue[1][1];
+		def q = queue[1][2];
+		sIp = queue[1][3];
+		queue = delete(queue,1);
+		for(i=1;i<=ncols(I);i++){
+			poly sIq = star(I[i],q);
+			for(j=1;j<=size(sIq);j++){
+				if(i != in || sIq[j]/leadcoef(sIq[j]) != sIp){
+					list relation;
+					Ii = I[i];
+					while(Ii != 0){
+						def v = lead(Ii)*sIq[j];
+						poly lcv = leadcoef(v);
+						def lmv = v/lcv;
+						if(p <= lmv){
+							list fa = find_ass(as,v/lcv);
+							if(fa[1] == 0 && !is_exclusive(lmv,hlist,X,Q)){
+								as = insert_ass(as,lmv,ind);
+								relation = insert(relation,list(lcv,ind));
+								queue = insert(queue,list(i,lmv,sIq[j]/leadcoef(sIq[j])));
+								ind++;
+							}
+							else{
+								relation = insert(relation,list(lcv,as.values[fa[2]]));
+							}
+							kill fa;
+						}
+						Ii = Ii - lead(Ii);
+
+						kill v, lcv, lmv;
+					}
+					relations = insert(relations,relation);
+
+					kill relation;
+				}
+			}
+			kill sIq;
+		}
+		kill q;
+	}
+
+	return(list(as,relations));
+}

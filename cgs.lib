@@ -1,0 +1,439 @@
+// *********************************************************
+// comprehensive standard basis systems for ideal or module
+// This function returns a list of (E, N, cgs) 
+// cgs: standard basis
+// valid in the parameter region V(E)\V(N) 
+// *********************************************************
+proc cgs(list #)
+{
+	if(size(#) != 3){
+		ERROR("Check the number of indices of cgs!");
+	}
+	if(typeof(#[1]) != "ideal" || typeof(#[2]) != "ideal"){
+		ERROR("Check the type of the input of cgs!");
+	}
+	if(typeof(#[3]) != "ideal" && typeof(#[3]) != "module"){
+		ERROR("Check the type of the input of cgs!");
+	}
+
+	if(typeof(#[3]) == "ideal"){
+		return(cgs_ideal(#[1],#[2],#[3]));
+	}
+	if(typeof(#[3]) == "module"){
+		return(cgs_module(#[1],#[2],#[3]));
+	}
+}
+
+// *********************************************************
+// personalized version of par2varRing 
+// This function returns the same list as par2varRing 
+// always returns parameter blocks in the end.
+// this is necessary for comprehensive standard systems
+// *********************************************************
+proc my_par2varRing(list #)
+{
+	int i,j,k,l; // index for incliment
+	def R = basering;
+
+	list rl = ringlist(R);
+	// looking for where is component ordering
+	int indc;
+	for(i=1;i<=size(rl[3]);i++){
+		if(rl[3][i][1] == "C" || rl[3][i][1] == "c"){
+			indc = i;
+		}
+	}
+	if(indc == size(rl[3])){
+		list L = par2varRing(#);
+		rl = ringlist(L[1]);
+		for(i=1;i<=size(rl[3]);i++){
+			if(rl[3][i][1] == "C" || rl[3][i][1] == "c"){
+				indc = i;
+			}
+		}
+		if(indc != size(rl[3])){
+			ERROR("something wrong happens in my_par2varRing.");
+		}
+		else{
+			list rl3indc = rl[3][indc];
+			rl[3] = delete(rl[3],indc);
+			rl[3] = insert(rl[3],rl3indc,size(rl[3])-1);
+
+			def P = ring(rl);
+			setring(P);
+			list Id = imap(L[1],Id); // this Id is not defined later when P is set. why ?
+			setring(R);
+			L[1] = P;
+		}
+		return(L);
+	}
+	else{
+		return(par2varRing(#));
+	}
+}
+
+// *********************************************************
+// comprehensive standard basis systems for ideals 
+// This function returns a list of (E, N, cgs) 
+// cgs: standard basis of ideal RHS
+// valid in the parameter region V(E)\V(N) 
+// *********************************************************
+proc cgs_ideal(ideal E, ideal N, ideal RHS)
+{
+	if(radical_membership_without_t(E,N)){
+		// In this case, V(E)/V(N) is inconsistent... 
+		return(list());
+	}
+	else{
+		// In this case, V(E)/V(N) is consistent... 
+		def R = basering;
+		int i,j,k,l; // index for incliment
+
+		int nv = nvars(R);
+		// In this ring, we regard parameters as variables.
+		if(npars(R) != 0){
+			def PR = par2varRing(list(E,RHS))[1];
+			setring PR;
+
+			// Id[1] : E, Id[2] : RHS
+			ideal PRHS = Id[2], Id[1];
+		}
+		else{
+			def PR = R;
+			ideal PRHS = RHS, E;
+		}	
+
+		option(redTail);
+		option(redSB);
+		if(size(PRHS) != 0){
+			// PRHS = groebner(PRHS); // tentatively, we avoid a bug of hilb;
+			PRHS = std(PRHS);
+		}
+		option(noredTail);
+		option(noredSB);
+
+		intvec le;
+		ideal Gr;
+		ideal GGr;
+		int VarDeg;
+		for(i=1;i<=ncols(PRHS);i++){
+			le = leadexp(PRHS[i]);
+			VarDeg = 0;
+			for(j=1;j<=nv;j++){
+				VarDeg = VarDeg + le[j];
+			}
+			if(VarDeg == 0){
+				Gr = Gr, PRHS[i];
+			}
+			else{
+				GGr = GGr, PRHS[i];
+			}
+		}
+		Gr = sortier(compress(Gr));
+		GGr = sortier(compress(GGr));
+
+		if(npars(R) != 0){
+			setring R;
+			ideal Gr = imap(PR,Gr);
+			ideal GGr = imap(PR,GGr);
+		}
+
+		list cgs_list;
+
+		ideal GrN;
+		for(i=1;i<=ncols(Gr);i++){
+			for(j=1;j<=ncols(N);j++){
+				GrN = GrN, Gr[i]*N[j];
+			}
+		}
+		GrN = compress(GrN);
+
+		if(!radical_membership_without_t(E,GrN)){
+			cgs_list = list(list(E,GrN,1));
+		}
+
+		if(radical_membership_without_t(Gr,N)){
+			return(cgs_list);
+		}
+		else{
+			ideal LM;
+			for(i=1;i<=ncols(GGr);i++){
+				LM = LM, leadmonom(GGr[i]);
+			}
+			// LM = groebner(LM); // tentatively we avoid a bug of std
+			LM = std(LM);
+
+			// *** here we can also consider other policies of how to choose Gm ***
+			ideal Gm;
+			for(i=1;i<=ncols(LM);i++){
+				for(j=1;j<=ncols(GGr);j++){
+					if(LM[i] == leadmonom(GGr[j])){
+						Gm = Gm, GGr[j];
+						break;
+					}
+				}
+			}
+			Gm = compress(Gm);
+			attrib(Gm,"isSB",1);
+
+			ideal cofs;
+			for(i=1;i<=ncols(Gm);i++){
+				cofs = cofs, leadcoef(Gm[i]);
+			}
+			cofs = compress(cofs);
+
+			list lfac;
+			for(i=1;i<=ncols(cofs);i++){
+				if(!coef_is_nonzero(Gr,N,cofs[i])){
+					lfac = insert(lfac,cofs[i]);
+				}
+			}
+			int size_lfac = size(lfac);
+
+			setring PR;
+
+			if(not(defined(lfac))){
+				list lfac = list();
+			}
+			if(size_lfac != 0){
+				lfac = imap(R,lfac);
+			}
+			ideal ifac;
+			for(i=1;i<=size(lfac);i++){
+				ifac = ifac, factorize(lfac[i],1);
+			}
+			ifac = compress(ifac);
+
+			// ***************************************************************************** 
+			// TODO:
+			// Fing out which ordering is the best for ifac = sort(compress(ifac),"dp")[1]. 
+			// Previously, we also tried "ls" instead of "dp". 
+			// *****************************************************************************
+			ifac = sort(ifac,"dp")[1];
+
+			setring R;
+			if(not(defined(ifac))){
+				ideal ifac;
+			}
+			ifac = imap(PR,ifac);
+
+			// removing repeated elements from ifac. 
+			list rfac;
+			int already_there;
+			for(i=1;i<=ncols(ifac);i++){
+				already_there = 0;
+				for(j=1;j<=size(rfac);j++){
+					if(ifac[i] == rfac[j]){
+						already_there = 1;
+						break;
+					}
+				}
+				if(!already_there && ifac[i] != 0){
+					rfac[size(rfac)+1] = ifac[i];
+				}
+			}
+
+			poly h = 1;
+			for(i=1;i<=size(rfac);i++){
+				h = h * rfac[i];
+			}
+			ideal hN = h * N;
+
+			// **** generic cases ****
+			if(!radical_membership_without_t(Gr,hN)){
+				// V(Gr)/V(hN) is consistent !
+				cgs_list = cgs_list + list(list(Gr,hN,Gm));
+			}
+			else{
+				// V(Gr)/V(hN) is inconsistent !
+			}
+
+			// **** non-generic cases ****
+			ideal hGr;
+			hN = N;
+			for(i=1;i<=size(rfac);i++){
+				hGr = Gr, rfac[i];
+				hGr = compress(hGr);
+				cgs_list = cgs_list + cgs_ideal(hGr,hN,GGr);
+
+				hN = rfac[i] * hN;
+			}
+			return(cgs_list);
+		}
+	}
+}
+
+// *********************************************************
+// comprehensive groebner basis systems for modules 
+// This function returns a list of (E, N, cgs) 
+// cgs: groebner basis of ideal RHS
+// valid in the parameter region V(E)\V(N) 
+// Please use this proc under the POT !!!
+// *********************************************************
+proc cgs_module(ideal E, ideal N, module RHS)
+{
+	if(radical_membership_without_t(E,N)){
+		// In this case, V(E)/V(N) is inconsistent... 
+		return(list());
+	}
+	else{
+		// In this case, V(E)/V(N) is consistent... 
+		def R = basering;
+		int i,j,k,l; // index for incliment
+
+		int nv = nvars(R);
+		int nc = nrows(RHS);
+
+		// In this ring, we regard parameters as variables.
+		if(npars(R) != 0){
+			def PR = my_par2varRing(list(E,RHS))[1];
+			setring PR;
+			// ideal E = std(Id[1]); // I guess this should work. why?
+			// module RHS = Id[2];
+			ideal E = std(imap(R,E));
+			module RHS = imap(R,RHS);
+
+			module PRHS = RHS, E*freemodule(nc);
+		}
+		else{
+			def PR = R;
+			module PRHS = RHS, E*freemodule(nc);
+		}	
+
+		option(redTail);
+		option(redSB);
+		if(size(PRHS) != 0){
+			// PRHS = groebner(PRHS); // tentatively we avoid a bug of hilb
+			PRHS = std(PRHS);
+		}
+		option(noredTail);
+		option(noredSB);
+
+		intvec le;
+		module Gr;
+		module GGr;
+		int VarDeg;
+		for(i=1;i<=ncols(PRHS);i++){
+			if(reduce(PRHS[i],E) == 0){
+				Gr = Gr, PRHS[i];
+			}
+			else{
+				GGr = GGr, PRHS[i];
+			}
+		}
+		Gr = sortier(compress(Gr));
+		GGr = sortier(compress(GGr));
+
+		if(npars(R) != 0){
+			setring R;
+			module Gr = imap(PR,Gr);
+			module GGr = imap(PR,GGr);
+		}
+
+		list cgs_list;
+
+		module LM;
+		for(i=1;i<=ncols(GGr);i++){
+			LM = LM, leadmonom(GGr[i]);
+		}
+		// LM = groebner(LM);
+		LM = std(LM); // tentatively we avoid a bug of hilb
+
+		module Gm;
+		for(i=1;i<=ncols(LM);i++){
+			for(j=1;j<=ncols(GGr);j++){
+				if(LM[i] == leadmonom(GGr[j])){
+					Gm = Gm, GGr[j];
+					break;
+				}
+			}
+		}
+		Gm = compress(Gm);
+		attrib(Gm,"isSB",1);
+
+		ideal cofs;
+		for(i=1;i<=ncols(Gm);i++){
+			cofs = cofs, leadcoef(Gm[i]);
+		}
+		cofs = compress(cofs);
+
+		list lfac;
+		for(i=1;i<=ncols(cofs);i++){
+			if(!coef_is_nonzero(E,N,cofs[i])){
+				lfac = insert(lfac,cofs[i]);
+			}
+		}
+		int size_lfac = size(lfac);
+
+		setring PR;
+
+		if(not(defined(lfac))){
+			list lfac = list();
+		}
+		if(size_lfac != 0){
+			lfac = imap(R,lfac);
+		}
+		ideal ifac;
+		for(i=1;i<=size(lfac);i++){
+			ifac = ifac, factorize(lfac[i],1);
+		}
+		ifac = compress(ifac);
+
+		// ***************************************************************************** 
+		// TODO:
+		// Fing out which ordering is the best for ifac = sort(compress(ifac),"dp")[1]. 
+		// Previously, we also tried "ls" instead of "dp". 
+		// *****************************************************************************
+		ifac = sort(ifac,"dp")[1];
+		// ifac = sort_random(ifac);
+
+		setring R;
+		if(not(defined(ifac))){
+			ideal ifac;
+		}
+		ifac = imap(PR,ifac);
+
+		// removing repeated elements from ifac. 
+		list rfac;
+		int already_there;
+		for(i=1;i<=ncols(ifac);i++){
+			already_there = 0;
+			for(j=1;j<=size(rfac);j++){
+				if(ifac[i] == rfac[j]){
+					already_there = 1;
+					break;
+				}
+			}
+			if(!already_there && ifac[i] != 0){
+				rfac[size(rfac)+1] = ifac[i];
+			}
+		}
+
+		poly h = 1;
+		for(i=1;i<=size(rfac);i++){
+			h = h * rfac[i];
+		}
+		ideal hN = h * N;
+
+		// **** generic cases ****
+		if(!radical_membership_without_t(E,hN)){
+			// V(E)/V(hN) is consistent !
+			cgs_list = cgs_list + list(list(E,hN,Gm));
+		}
+		else{
+			// V(E)/V(hN) is inconsistent !
+		}
+
+		// **** non-generic cases ****
+		ideal hE;
+		hN = N;
+		for(i=1;i<=size(rfac);i++){
+			hE = E, rfac[i];
+			hE = compress(hE);
+			cgs_list = cgs_list + cgs_module(hE,hN,GGr);
+
+			hN = rfac[i] * hN;
+		}
+		return(cgs_list);
+	}
+}

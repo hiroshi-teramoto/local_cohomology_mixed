@@ -1,0 +1,84 @@
+LIB "teachstd.lib";
+LIB "polylib.lib";
+LIB "ainvar.lib";
+LIB "crypto.lib";
+LIB "zeroset.lib";
+LIB "redcgs.lib";
+
+LIB "../local_cohomology/inverse_ring.lib";
+LIB "local_cohomology_mixed.lib";
+LIB "associative_container.lib";
+newstruct("ass_con","list keys, list values");
+
+LIB "related_terms.lib";
+LIB "addcons.lib";
+LIB "cgs.lib";
+LIB "check_zeros.lib";
+LIB "simplify_constructible.lib";
+LIB "combine_locally_closed.lib";
+
+int nx = 2;
+int ny = 2;
+int i,j,k,l;
+
+ring R = 0, (x(1..nx),y(1..ny)), (Ds,c);
+// ring R = 0, (x(1..nx),y(1..ny)), (ws(1,1,1,3),c);
+list X = list();
+X[1] = ideal(y(1..ny));
+
+ideal E = 0;
+ideal N = 1;
+
+int K = 9;
+poly f(1..ny);
+f(1) = x(1);
+f(2) = x(2)^4+x(2)^9+x(1)*x(2)^2;
+
+vector f;
+for(i=1;i<=ny;i++){
+	f = f + f(i)*gen(i);
+}
+
+option(prot);
+ideal zero;
+for(i=1;i<=ny;i++){
+	zero = zero, y(i)-f[i];
+}
+zero = compress(zero);
+module TR;
+for(i=1;i<=nx;i++){
+	TR = TR, diff(f,x(i));
+}
+TR = compress(TR);
+ideal mx = x(1..nx);
+ideal my = y(1..ny);
+
+module TR1K = TR + zero*freemodule(ny) + mx^(K+1)*freemodule(ny);
+TR1K = std(TR1K);
+
+// Q[i]: generators of component X_{i+1} in the paper, which is X[i]-module
+list Q;
+Q[1] = freemodule(ny);
+
+system("--ticks-per-sec",1000);
+rtimer=1;
+int t=rtimer;
+list Lg = local_cohomology_mixed_s(X,E,N,TR1K,Q);
+rtimer-t;
+Lg;
+
+for(i=1;i<=size(Lg);i++){
+	Lg[i][1] = radical_ideal(Lg[i][1]);
+	Lg[i][2] = radical_ideal(Lg[i][2]);
+}
+
+for(i=1;i<=size(Lg);i++){
+	print("E :");
+	Lg[i][1];
+	print("N :");
+	Lg[i][2];
+	print("quotients :");
+	kbase_mixed(Lg[i][3]);
+}
+
+quit;

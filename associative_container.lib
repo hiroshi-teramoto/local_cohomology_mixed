@@ -1,0 +1,75 @@
+// insert pairs of keys and values (keys supposed to be comparable, like, monomials)
+proc insert_ass(ass_con as, def key, def value)
+{
+	int i,j,k,l;
+	ass_con asc = as;
+	list fa = find_ass(as,key);
+	if(fa[1] == 1){
+		asc.values[fa[2]] = value;
+	}
+	else{
+		asc.keys = insert(asc.keys,key,fa[2]);
+		asc.values = insert(asc.values,value,fa[2]);
+	}
+	return(asc);
+}
+
+proc insert_ass_list(ass_con as, list keys, list values)
+{
+	if(size(keys) != size(values)){
+		ERROR("Check the keys and values for insert_ass_list!");
+	}
+
+	int i;
+	ass_con asc = as;
+	list fa;
+	for(i=1;i<=size(keys);i++){
+		fa = find_ass(asc,keys[i]);
+		fa;
+
+		if(fa[1] == 1){
+			asc.values[fa[2]] = values[i];
+		}
+		else{
+			asc.keys = insert(asc.keys,keys[i],fa[2]);
+			asc.values = insert(asc.values,values[i],fa[2]);
+		}
+	}	
+	return(asc);
+}
+
+// returns list(a,b), a = 0 if there is no key and 1 if there is, b position to be inserted 
+proc find_ass(ass_con as, def key)
+{
+	if(size(as.keys) == 0){
+		return(list(0,0));
+	}
+	if(key < as.keys[1]){
+		return(list(0,0));
+	}
+	if(as.keys[size(as.keys)] < key){
+		return(list(0,size(as.keys)));
+	}
+
+	int i,j,k,l;
+	int mid;
+
+	int left = 1;
+	int right = size(as.keys);
+	while(left != right){
+		mid = (left+right) div 2 + (left+right) mod 2;
+		if(as.keys[mid] > key){
+			right = mid - 1;
+		}
+		else{
+			left = mid;
+		}
+	}
+
+	if(as.keys[left] == key){
+		return(list(1,left));
+	}
+	else{
+		return(list(0,left));
+	}	
+}
