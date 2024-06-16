@@ -20,5 +20,5 @@ To run the codes, in the directory, type
 singular example_codimension_transverse_fold.exe
 ```
 
-We assume you are familiar with Singular. If not please refer to [the singular manual](https://www.singular.uni-kl.de/Manual/4-3-2/index.htm#SEC_Top). You can download Singular from [GitHub](https://github.com/Singular/Singular) (The current binary version of Singular (at least at 2024/03/13) contains some bugs in the matrix ordering and the function `sat` to compute the saturation ideal in an exceptional case, which are fixed in the sources. To run the code, compile from the latest source as in the instruction in the GitHub page.).
+We assume you are familiar with Singular. If not please refer to [the singular manual](https://www.singular.uni-kl.de/Manual/4-3-2/index.htm#SEC_Top). You can download Singular from [GitHub](https://github.com/Singular/Singular) To run the code, compile from the latest source as in the instruction in the GitHub page.
 
