@@ -65,7 +65,7 @@ The comprehensive mixed-standard system `Lg` can be used in the following functi
 > | `p` | input poly or vector to be reduced |
 > | `L` | local cohomology for mixed module |
 > #### Output
-> - the reduced normal form of `p`, that is, $\mathrm{NF} \_{\textnormal{tail}} \left( p \middle| \left( S^{\left( j \right)} \right)_{j \in J} \right)$ in the paper
+> - the reduced normal form of `p`, that is, $\mathrm{NF} \_{\textnormal{tail}} \left( p \middle| \left( S^{\left( j \right)} \right)_{j \in J} \right)$ in the paper [Comprehensive Standard System for Generalized Mixed Module and its Application to Singularity Theory](https://www.worldscientific.com/doi/abs/10.1142/S0219498824502219?journalCode=jaa) by Hiroshi Teramoto and Katsusuke Nabeshima.
 > #### Example
 > Suppose `p` is a vector you want to reduce by the comprehensive standard system of the $i$-th parameter range $V(E_i) \setminus V(N_i)$, that is, `Lg[i]`. You can compute that by the command `reduce_mixed_with_E(X,p,Lg[i][3][3],Lg[i][4],Lg[i][3][1])`.
 
