@@ -85,7 +85,7 @@ Finally, you are ready to compute comprehensive standard system for $(M_i)_{i \i
 >  [i][1]: generators of $E_i$
 >  [i][2]: generators of $N_i$
 >  [i][3]: local cohomology
->  [i][4]: $S^{(j+1)}$ in TN2023
+>  [i][4]: set of monomials in ideal or module that is in $\mathrm{TCList}$ that is failed to be a head term of the local cohomology
 > ```
 
 By using `Lg`, the complete transversal can be computed as follows (the parameter `K` to specify the degree of complete transversal you are looking for):
