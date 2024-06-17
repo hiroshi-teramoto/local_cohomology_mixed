@@ -145,11 +145,11 @@ This provides the decomposition of $\mathbb{C}^4$. The decomposition in real can
 
 To complete the classification of the orbits of $1$-jet, 
 - Confirm if each semi-algebraic set obtained by projecting the constructible set is manifold.
-  - [check_smoothness.exe](https://github.com/hiroshi-teramoto/mixed_module/blob/main/check_smoothness.md)
+  - [check_smoothness.exe](https://github.com/hiroshi-teramoto/local_cohomology_mixed/blob/main/check_smoothness.md)
 - Confirm if the tangent space of each semi-algebraic set is contained in $T \mathcal{G} \left( f \right) + \mathcal{M}_2^2 \mathcal{E}_2^2$.
-  - [check_infinitesimal.exe](https://github.com/hiroshi-teramoto/mixed_module/blob/main/check_infinitesimal.md)
+  - [check_infinitesimal.exe](https://github.com/hiroshi-teramoto/local_cohomology_mixed/blob/main/check_infinitesimal.md)
 
-If you confirm above, each connected components of the semi-algebraic sets are contained in a single orbit by using Mather's lemma. To find connected components of the semi-algebraic sets, you can use [CylindricalDecomposition](https://reference.wolfram.com/language/ref/CylindricalDecomposition.html) with the option "Components", for example. [Here](https://github.com/hiroshi-teramoto/mixed_module/blob/main/connectedcomponents.nb) is a sample Mathematica code to do that. Note that this code uses a random perturbation to ensure that the polynomials appearing in the cylindrical algebraic decomposition is quasi-monic. For detail, see Chapter 11, Remark 11.46 in [the book](https://link.springer.com/book/10.1007/3-540-33099-2) due to Saugata Basu, Richard Pollack, and Marie-Françoise Roy. Note that the algorithm involves a random number so run the algorithm repeatedly if you get some error (This happens if random numbers are chosen so that some of the polynomials appear in the cylindrical algebraic decomposition are not quasi-monic.). [SemialgebraicComponentInstances](https://reference.wolfram.com/language/ref/SemialgebraicComponentInstances.html) identifies a list of points for each connected component.
+If you confirm above, each connected components of the semi-algebraic sets are contained in a single orbit by using Mather's lemma. To find connected components of the semi-algebraic sets, you can use [CylindricalDecomposition](https://reference.wolfram.com/language/ref/CylindricalDecomposition.html) with the option "Components", for example. [Here](https://github.com/hiroshi-teramoto/local_cohomology_mixed/blob/main/connectedcomponents.nb) is a sample Mathematica code to do that. Note that this code uses a random perturbation to ensure that the polynomials appearing in the cylindrical algebraic decomposition is quasi-monic. For detail, see Chapter 11, Remark 11.46 in [the book](https://link.springer.com/book/10.1007/3-540-33099-2) due to Saugata Basu, Richard Pollack, and Marie-Françoise Roy. Note that the algorithm involves a random number so run the algorithm repeatedly if you get some error (This happens if random numbers are chosen so that some of the polynomials appear in the cylindrical algebraic decomposition are not quasi-monic.). [SemialgebraicComponentInstances](https://reference.wolfram.com/language/ref/SemialgebraicComponentInstances.html) identifies a list of points for each connected component.
 
 The results of the computation can be summarised as:
 
@@ -178,6 +178,6 @@ Since the induced action of $\mathcal{G}$ to the $1$-jet space transforms $\left
 | $\left( x_1, 0 \right)$  | $2$ |
 | $\left( 0, 0 \right)$  | $4$ |
 
-For each representative, you can investigate the higher jets by using complete transversal. For the second representative, $\left( x_1, x_1 \right)$, its $2$-jet is investigated in [example_complete_transversal.exe](https://github.com/hiroshi-teramoto/mixed_module/blob/main/example_complete_transversal.md). 
+For each representative, you can investigate the higher jets by using complete transversal. For the second representative, $\left( x_1, x_1 \right)$, its $2$-jet is investigated in [example_complete_transversal.exe](https://github.com/hiroshi-teramoto/local_cohomology_mixed/blob/main/example_complete_transversal.md). 
 
 [^1]: Note that the original Mather's lemma only tells you whether a connected component is contained in a single orbit or not and whether more than one connected components are contained in a single orbit should be checked manually in the current version of this library.
