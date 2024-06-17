@@ -45,7 +45,6 @@ X[ny+1] = ideal(0);
 ```
 
 In the subsequent lines, we (for detail, see the code.)
-- compute $\eta$,
 - define the ideals $E$ and $N$,
 - define $f$,
 - define `TR1K` (= $M_1$),
