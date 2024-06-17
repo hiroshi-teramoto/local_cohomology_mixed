@@ -29,7 +29,7 @@ By using the isomorphism, the computation of the codimension of the tangent spac
 
 First, let us define a ring having parameters `c(1)`, `c(2)`, `c(3)`, and `c(4)` which correspond to $c_1, c_2, c_3$, and $c_4$, respectively, with variables $\lbrace x_1, x_2, y_1, y_2 \rbrace$.
 ```Singular
-ring R = (0,c(1..4)), (x(1..nx),y(1..ny)), (M(imat),C);
+ring R = (0,c(1..4)), (x(1..nx),y(1..ny)), (ds,C);
 ```
 
 Then, let us define a family of variables `X` as:
