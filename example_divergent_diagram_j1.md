@@ -50,7 +50,7 @@ In the subsequent lines, we (for detail, see the code.)
 - define `TR1K` (= $M_1$),
 - define `Q` (list of $M_2, M_3, M_4$, where `Q[i]` = $M_{i+1}$)
 
-After the above parameters are set, we are readly to compute the comprehensive standard system for mixed-module:
+After the above parameters are set, we are readly to compute the local cohomology for mixed-module with parameters:
 ```Singular
 list Lg = local_cohomology_mixed_s(X,E,N,TR1K,Q);
 ```
