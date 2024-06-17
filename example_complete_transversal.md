@@ -57,7 +57,7 @@ $M_4$ = Q[3];
 Finally, you are ready to compute comprehensive standard system for $(M_i)_{i \in \{ 1,2,3,4 \}}$. $M_1$ is supposed to have finite $K$-codimension. You can compute that by the following command (implemented in local_cohomology_mixed_s.lib).
 
 > ```Singular
-> list Lg = local_cohomology_mixed_s(X,eta,E,N,TR1K,Q);
+> list Lg = local_cohomology_mixed_s(X,E,N,TR1K,Q);
 > ```
 > | Parameter | Description |
 > | --------- | ----------- |
@@ -83,10 +83,10 @@ for(i=1;i<=size(Lg);i++){
 	module HK1 = mx^K*freemodule(ny);
 	module REM = HK1;
 	for(j=1;j<=size(HK1);j++){
-		REM[j] = reduce_mixed_with_E(X,REM[j],Lg[i][3][3],Lg[i][4],Lg[i][3][1]);	
+		REM[j] = reduce_cohom(REM[j],Lg[i][3]);	
 	}
 	if(size(REM) != 0){
-		matrix A = matrix_representation_normalize(REM,kbase_mixed(X,Lg[i]));
+		matrix A = matrix_representation_normalize(REM,kbase_mixed(Lg[i][3]));
 		list L = gauss_elimination_gb(Lg[i][1],Lg[i][2],transpose(A));
 
 		module CT;
