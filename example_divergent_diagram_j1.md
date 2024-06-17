@@ -54,11 +54,11 @@ After the above parameters are set, we are readly to compute the local cohomolog
 ```Singular
 list Lg = local_cohomology_mixed_s(X,E,N,TR1K,Q);
 ```
-For the detail of `cssm`, please refer to [example_codimension_transverse_fold.exe](https://github.com/hiroshi-teramoto/mixed_module/blob/main/example_codimension_transverse_fold.md) or [the code](https://github.com/hiroshi-teramoto/mixed_module/blob/main/cssm_multi_v2.lib).
+For the detail of `local_cohomology_mixed_s`, please refer to [example_codimension_transverse_fold.exe](https://github.com/hiroshi-teramoto/local_cohomology_mixed/blob/main/example_codimension_transverse_fold.md) or [the code](https://github.com/hiroshi-teramoto/local_cohomology_mixed/blob/main/local_cohomology_mixed_s.lib).
 
-`cssm` decomposes the parameter space $\mathbb{C}^4$ into several locally closed sets $V \left( E_i \right) \setminus V \left( N_i \right)$ and the set of the standard system for mixed-module that is valid on each locally closed set. The codimension of the quotient space on each locally closed set is constant and it can be computed by 
+`local_cohomology_mixed` decomposes the parameter space $\mathbb{C}^4$ into several locally closed sets $V \left( E_i \right) \setminus V \left( N_i \right)$ and the set of the local cohomology for mixed-module that is valid on each locally closed set. The codimension of the quotient space on each locally closed set is constant and it can be computed by 
 ```Singular
-size(kbase_mixed(X,Lg[i]))-ny;
+size(Lg[i][3])-ny;
 ```
 in the code. Note that in this case, we want to compute the codimension of $M$ in $\langle x_1, x_2 \rangle \left( \mathbb{R} \left[ X_1 \right] \_{\langle X_1 \rangle} \right)^2$ and thus we subtracted `ny` which corresponds to the monomials $\left( 1, 0 \right)$ and $\left( 0, 1 \right)$.
 
