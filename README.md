@@ -10,7 +10,7 @@ To use the libraries, download all the files and place them into a single direct
 * [example_divergent_diagram_j1.exe](https://github.com/hiroshi-teramoto/local_cohomology_mixed/blob/main/example_divergent_diagram_j1.md)
   - See 4.1.1 Example: Mather's lemma
 * [example_complete_transversal.exe](https://github.com/hiroshi-teramoto/local_cohomology_mixed/blob/main/example_complete_transversal.md)
-  - See 4.1.2 Example: [complete transversal](https://iopscience.iop.org/article/10.1088/0951-7715/10/1/017) (with the degree filtration for class 3 in Table.~1 in the paper)
+  - See 4.1.2 Example: [complete transversal](https://iopscience.iop.org/article/10.1088/0951-7715/10/1/017) (with the degree filtration for class 3 in Table.~1 in TN2023)
 * [example_determinacy_Rieger_test.exe](https://github.com/hiroshi-teramoto/mixed_module_v4.3.2/blob/main/example_Ae_quotients.md)
   - Examples to illustrate the computation of the quotients of Ae-tangent space (coming soom!)
 
