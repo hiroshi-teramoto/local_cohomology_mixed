@@ -52,7 +52,7 @@ In the subsequent lines, we (for detail, see the code.)
 
 After the above parameters are set, we are readly to compute the comprehensive standard system for mixed-module:
 ```Singular
-list Lg = cssm(X,eta,E,N,TR1K,Q);
+list Lg = local_cohomology_mixed_s(X,E,N,TR1K,Q);
 ```
 For the detail of `cssm`, please refer to [example_codimension_transverse_fold.exe](https://github.com/hiroshi-teramoto/mixed_module/blob/main/example_codimension_transverse_fold.md) or [the code](https://github.com/hiroshi-teramoto/mixed_module/blob/main/cssm_multi_v2.lib).
 
