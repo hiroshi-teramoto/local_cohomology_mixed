@@ -54,7 +54,7 @@ $M_2$ = Q[1];
 $M_3$ = Q[2];
 $M_4$ = Q[3];
 
-Finally, you are ready to compute comprehensive standard system for $(M_i)_{i \in \{ 1,2,3,4 \}}$. $M_1$ is supposed to have finite $K$-codimension. You can compute that by the following command (implemented in cssm_multi_v2.lib).
+Finally, you are ready to compute comprehensive standard system for $(M_i)_{i \in \{ 1,2,3,4 \}}$. $M_1$ is supposed to have finite $K$-codimension. You can compute that by the following command (implemented in local_cohomology_mixed_s.lib).
 
 > ```Singular
 > list Lg = local_cohomology_mixed_s(X,eta,E,N,TR1K,Q);
