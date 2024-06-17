@@ -1007,7 +1007,6 @@ proc local_cohomology_mixed_s(list X, ideal E, ideal N, def I, list Q, list #)
 proc kbase_mixed(def HJ)
 {
 	def R = basering;
-
 	def Ri = inverse_ring(R);
 	setring Ri;
 	def HList = lead(imap(R,HJ));
