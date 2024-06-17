@@ -3,12 +3,17 @@ LIB "ring.lib";
 LIB "ainvar.lib";
 LIB "zeroset.lib";
 LIB "crypto.lib";
+LIB "redcgs.lib";
+
+LIB "inverse_ring.lib";
+LIB "local_cohomology_mixed.lib";
+LIB "associative_container.lib";
+newstruct("ass_con","list keys, list values");
+LIB "related_terms.lib";
 
 LIB "combine_locally_closed.lib";
 LIB "simplify_constructible.lib";
 LIB "addcons.lib";
-LIB "local_cohomology.lib";
-LIB "cssm_multi_std.lib";
 LIB "extract_tangent_w.lib";
 LIB "gauss_elimination.lib";
 LIB "cgs.lib";
@@ -36,23 +41,6 @@ for(i=1;i<=ny;i++){
 	X[i] = std(X[i]);
 }
 X[ny+1] = ideal(0);
-
-// computing eta (for details, see the paper.).
-intmat eta[ny+1][ny+1];
-ideal Xij;
-for(i=1;i<=ny+1;i++){
-	eta[i,i] = i;
-	for(j=i+1;j<=ny+1;j++){
-		Xij = std(reduce(intersect(X[i],X[j]),maxideal(2)));
-		for(k=1;k<=ny+1;k++){ 
-			if(size(reduce(Xij,X[k])) == 0 && size(reduce(X[k],Xij)) == 0){
-				eta[i,j] = k;
-				break;
-			}
-		}
-		eta[j,i] = eta[i,j];	
-	}
-}
 
 // Definitions of E and N, modify this part.
 
@@ -129,11 +117,10 @@ for(i=1;i<=size(L);i++){
 		C[j] = cleardenom(C[j]);
 	}
 
-	list Lg = cssm(X,eta,L[i][1],L[i][2],TR1K,Q);
+	list Lg = local_cohomology_mixed_s(X,L[i][1],L[i][2],TR1K,Q);
 	for(j=1;j<=size(Lg);j++){
                 // simplify locally closed set
                 Lg[j][1] = radical_ideal(Lg[j][1]);
-		Lg[j][2] = reduction_by_ideal(Lg[j][2],Lg[j][1]);
 		Lg[j][2] = radical_ideal(Lg[j][2]);
 
 		print("On the locally closed set V(E)\V(N) :");
@@ -146,7 +133,8 @@ for(i=1;i<=size(L);i++){
 			break;
 		}
 		for(k=1;k<=size(C);k++){
-			p = reduce_mixed_with_E(X,C[k],Lg[j][3][3],Lg[j][4],Lg[j][3][1]);
+			p = reduce_cohom(C[k],Lg[j][3]);
+			p = reduction_by_ideal(module(p),Lg[j][1])[1];
 			print("the element"),C[k],print("is reduced to"), p, print(".");
 		}
 	}
