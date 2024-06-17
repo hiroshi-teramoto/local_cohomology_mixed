@@ -12,7 +12,7 @@ To use the libraries, download all the files and place them into a single direct
 * [example_complete_transversal.exe](https://github.com/hiroshi-teramoto/local_cohomology_mixed/blob/main/example_complete_transversal.md)
   - See 4.1.2 Example: [complete transversal](https://iopscience.iop.org/article/10.1088/0951-7715/10/1/017) (with the degree filtration for class 3 in Table.~1 in TN2023)
 * [example_determinacy_Rieger_test.exe](https://github.com/hiroshi-teramoto/local_cohomology_mixed/blob/main/example_A_determinacy.md)
-  - Examples to illustrate the computation of the quotients of Ae-tangent space (coming soom!)
+  - Examples to illustrate the computation of an upper bound of $\mathcal{A}$-determinacy order (coming soom!)
 
 To run the codes, in the directory, type 
 
