@@ -1,4 +1,4 @@
-Let us explain how to use the library by taking example_divergent_diagram_j1.exe (See 4.1.1 Example: Mather's lemma in the paper) as an example. Specifically, this example involves several parameters and through this example you can learn how to handle that. For background, please refer to 4.1.1 Example: Mather's lemma.
+Let us explain how to use the library by taking example_divergent_diagram_j1.exe (See 4.1.1 Example: Mather's lemma in TN2023) as an example. Specifically, this example involves several parameters and through this example you can learn how to handle that. For background, please refer to 4.1.1 Example: Mather's lemma.
 
 The purpose here is to classify $1$-jet of the divergent diagram 
 $$\left( f_1; f_2 \right) \colon \left( \mathbb{R}, 0 \right) \xleftarrow{f_1} \left( \mathbb{R}^2, 0 \right) \xrightarrow{f_2} \left( \mathbb{R}, 0 \right)$$
@@ -12,7 +12,7 @@ The group acting on the divergent diagram $\mathcal{G}$ induces the Lie group $j
 $$\dim_{\mathbb{R}} T_{j^1 f} \left( j^1 \mathcal{G} \cdot j^1 f \right)$$
 is constant for each component. This demonstration is to explain how to do that by using the library. 
 
-By the isomorphism as an $\mathbb{R}$-vector spaces in the paper (4.1), we obtain 
+By the isomorphism as an $\mathbb{R}$-vector spaces in TN2023 (4.1), we obtain 
 
 $$j^1 \mathcal{M}_2 \mathcal{E} \_2 \^2 / T \_{j^1 f} \left( j^1 \mathcal{G} \cdot j^1 f \right) \cong \langle x_1, x_2 \rangle \left( \mathbb{R} \left[ X_1 \right] \_{\langle X_1 \rangle} \right)^2 / M$$
 
@@ -23,7 +23,7 @@ $$j^1 \mathcal{M}_2 \mathcal{E} \_2 \^2 / T \_{j^1 f} \left( j^1 \mathcal{G} \cd
 - $X_3 = \lbrace y_2 \rbrace$,
 - $X_4 = \emptyset$,
 and
-- $M = \sum_{j \in I} M_j$ (Expressions of $M_j \ \left( j \in I \right)$ are lengthy and please refer to the paper for details.)
+- $M = \sum_{j \in I} M_j$ (Expressions of $M_j \ \left( j \in I \right)$ are lengthy and please refer to TN2023 for details.)
 
 By using the isomorphism, the computation of the codimension of the tangent space $T \_{j^1 f} \left( j^1 \mathcal{G} \cdot j^1 f \right)$ is reduced to that of the mixed-module $M$. The latter can be computed by using the comprehensive standard system for mixed-module. 
 
@@ -168,7 +168,7 @@ Here, we show one representative for each connected component. In terms of $1$-j
 | $\left( 1, 0, -1, 0 \right)$, $\left( 1, 0, 1, 0 \right)$ | $\left( x_1, -x_1 \right)$, $\left( x_1, x_1 \right)$ |
 | $\left( 1, 0, 0, 0 \right)$, $\left( 0, 0, 1, 0 \right)$ | $\left( x_1, 0 \right)$, $\left( 0, x_1 \right)$ |
 
-Since the induced action of $\mathcal{G}$ to the $1$-jet space transforms $\left( x_1, -x_2 \right)$ to $\left( x_1, x_2 \right)$, $\left( x_1, -x_1 \right)$ to $\left( x_1, x_1 \right)$, and $\left( 0, x_1 \right)$ to $\left( x_1, 0 \right)$[^1], respectively, we can get the following list of representative of each orbit. This reproduces the results in Table~1 in the paper.
+Since the induced action of $\mathcal{G}$ to the $1$-jet space transforms $\left( x_1, -x_2 \right)$ to $\left( x_1, x_2 \right)$, $\left( x_1, -x_1 \right)$ to $\left( x_1, x_1 \right)$, and $\left( 0, x_1 \right)$ to $\left( x_1, 0 \right)$[^1], respectively, we can get the following list of representative of each orbit. This reproduces the results in Table~1 in TN2023.
 
 | Representative of $1$-jet | Codimension of the orbit in the $1$-jet space |
 | ------------------------- | --------------------------------------------- |
