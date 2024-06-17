@@ -7,7 +7,7 @@ In [the tutorial](https://github.com/hiroshi-teramoto/local_cohomology_mixed/blo
 | 3 | $c_1 c_4 - c_2 c_3 = 0$ and ($c_2 c_4 \neq 0$ or $c_1 c_4 \neq 0$ or $c_1 c_3 \neq 0$)  |
 | 4 | $c_2 c_4 = c_1 c_4 = c_2 c_3 = c_1 c_3 = 0$ and ($c_1 \neq 0$ or $c_2 \neq 0$ or $c_3 \neq 0$ or $c_4 \neq 0$)  |
 
-are smooth manifolds. In this tutorial, we provide a source code ([check_infinitesimal.exe](https://github.com/hiroshi-teramoto/local_cohomology_mixed/blob/main/check_infinitesimal.exe)) to test if the tangent spaces of the manifolds are contained in $T \mathcal{G} \left( f \right) + \mathcal{M}_2^2 \mathcal{E}_2^2$. This can be done by computing the mixed standard basis of $T \mathcal{G} \left( f \right) + \mathcal{M}_2^2 \mathcal{E}_2^2$ and reduce the tangent vectors with respect to the standard basis (For detail, see the paper, 4.1.1)[^1]. If this test is failed, the dimension of the orbit is strictly smaller than the dimension of the semi-algebraic set. This happens when the moduli appears.
+are smooth manifolds. In this tutorial, we provide a source code ([check_infinitesimal.exe](https://github.com/hiroshi-teramoto/local_cohomology_mixed/blob/main/check_infinitesimal.exe)) to test if the tangent spaces of the manifolds are contained in $T \mathcal{G} \left( f \right) + \mathcal{M}_2^2 \mathcal{E}_2^2$. This can be done by computing the local cohomology of $T \mathcal{G} \left( f \right) + \mathcal{M}_2^2 \mathcal{E}_2^2$ and reduce the tangent vectors with respect to the local cohomology (For detail, see the paper (to be announced at CASC2024.)[^1]. If this test is failed, the dimension of the orbit is strictly smaller than the dimension of the semi-algebraic set. This happens when the moduli appears.
 
 Let $\mathbb{R} \left[ c \right]$ be a polynomial ring with variables $c = \left( c_1, \ldots, c_m \right)$ with the coefficient field $\mathbb{R}$ and $E$, $N$ be ideals in $\mathbb{R} \left[ c \right]$. Let $h_1, \ldots, h_l$ be generators of $E$. Let $dE$ be the $l \times m$ jacobi matrix defined as:
 
@@ -35,6 +35,6 @@ This conversion is done in the code as:
 module C = TW*transpose(L[i][3]);
 ```
 
-The remainder of the code checks if each basis is contained in $T \mathcal{G} \left( f \right) + \mathcal{M}_2^2 \mathcal{E}_2^2$. This can be checked by reducing the membership problem to a membership problem of a mixed module, latter can be solved by computing the mixed standard basis of the mixed module. For detail, please see the code ([check_infinitesimal.exe](https://github.com/hiroshi-teramoto/mixed_module/blob/main/check_infinitesimal.exe)).
+The remainder of the code checks if each basis is contained in $T \mathcal{G} \left( f \right) + \mathcal{M}_2^2 \mathcal{E}_2^2$. This can be checked by reducing the membership problem to a membership problem of a mixed module, latter can be solved by computing the local cohomology of the mixed module. For detail, please see the code ([check_infinitesimal.exe](https://github.com/hiroshi-teramoto/mixed_module/blob/main/check_infinitesimal.exe)).
 
 [^1]: If this test is failed, the dimension of the orbit is strictly smaller than the dimension of the semi-algebraic set. This happens when the moduli appears. In the current version of this library, we have not yet implemented a systematic classification algorithm in this case.
