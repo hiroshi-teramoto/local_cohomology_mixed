@@ -6,18 +6,18 @@ LIB "zeroset.lib";
 LIB "redcgs.lib";
 
 LIB "A_determinacy.lib";
-LIB "../local_cohomology/inverse_ring.lib";
+LIB "inverse_ring.lib";
 LIB "local_cohomology_mixed.lib";
 LIB "associative_container.lib";
 newstruct("ass_con","list keys, list values");
 
 LIB "related_terms.lib";
-LIB "../mixed_module-main/mixed_module-main_new/addcons.lib";
-LIB "../mixed_module-main/mixed_module-main_new/cgs.lib";
-LIB "../mixed_module-main/mixed_module-main_new/check_zeros.lib";
-LIB "../mixed_module-main/mixed_module-main_new/simplify_constructible.lib";
-LIB "../mixed_module-main/mixed_module-main_new/combine_locally_closed.lib";
-LIB "../mixed_module-main/mixed_module-main_new/subtract_locally_closed.lib";
+LIB "addcons.lib";
+LIB "cgs.lib";
+LIB "check_zeros.lib";
+LIB "simplify_constructible.lib";
+LIB "combine_locally_closed.lib";
+// LIB "subtract_locally_closed.lib";
 
 int nx = 2;
 int ny = 2;
@@ -33,7 +33,7 @@ for(i=1;i<=nx-1;i++){
 	imat[i+ny+1,nx-i+1] = 1;
 }
 ring R = (0,a,b), (x(1..nx),y(1..ny)), (ws(1,1,1,2),c);
-// ring R = 0, (x(1..nx),y(1..ny)), (M(imat),c);
+// ring R = 0, (x(1..nx),y(1..ny)), (ws(1,1,1,2),c);
 list X = list();
 X[1] = ideal(y(1..ny));
 
@@ -48,10 +48,8 @@ f(2) = x(2);
 */
 
 // 2
-/*
 f(1) = x(1);
 f(2) = x(2)^2;
-*/
 
 // 3
 /*
@@ -96,11 +94,13 @@ f(2) = x(2)^6+x(2)^9+x(1)*x(2);
 */
 
 // 10
+/*
 f(1) = x(1);
 f(2) = x(2)^7+x(2)^9+a*x(2)^10+b*x(2)^11+x(1)*x(2);
+*/
 
-/*
 // 11
+/*
 f(1) = x(1);
 f(2) = x(2)^4+x(2)^9+x(1)*x(2)^2;
 */
@@ -126,14 +126,12 @@ for(i=1;i<=nx;i++){
 	}
 } 
 
-ideal Eij, Nij;
 ideal zero;
 for(i=1;i<=ny;i++){
 	zero = zero, y(i)-f[i];
 }
 zero = compress(zero);
 
-module M1;
 list Q;
 Q[1] = my^2*freemodule(ny);
 // add some nilpotent parts
@@ -146,7 +144,7 @@ for(i=1;i<=ny;i++){
 system("--ticks-per-sec",1000);
 rtimer=1;
 int t=rtimer;
-list LAdet = Adet(X,E,N,M1,Q);
+list LAdet = Adet(X,E,N,TRnf,Q);
 rtimer-t;
 
 // display the results
