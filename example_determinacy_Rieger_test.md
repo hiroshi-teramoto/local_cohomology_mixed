@@ -31,7 +31,7 @@ In the subsequent lines, generators of each component of the mixed module is spe
 $M_1$ = TR1K;
 $M_2$ = Q[1];
 
-In case of $\mathcal{A}$-equivalence, a criterion of $k$ - $\mathcal{A}$-determinacy is given by du Plessis Lemma~2.6 in (Bruce et al. 1987), that is, $f \colon \left( \mathbb{R}^2, 0 \right) \rightarrow \left( \mathbb{R}^2, 0 \right)$ is $k$-$\mathcal{A}$-determined if
+In case of $\mathcal{A}$-equivalence, a criterion of $k$ - $\mathcal{A}$-determinacy is given by du Plessis Lemma~2.6 in (Bruce et al. 1987), that is, $f \colon \left( \mathbb{R}^2, 0 \right) \rightarrow \left( \mathbb{R}^2, 0 \right)$ is $k$ - $\mathcal{A}$-determined if
 ```math
 \mathcal{M}_2^{k+1} \mathcal{E}_2^2 \subset T \mathcal{A}_1 \left( f \right) + \langle x_1 \frac{\partial f}{\partial x_2} \rangle_{\mathbb{R}} + f^* \langle y_2 e_1 \rangle_{\mathbb{R}} + \mathcal{M}_2^{k+1} f^* \left( \mathcal{M}_2 \right) \mathcal{E}_2^2 + \mathcal{M}_2^{2k+2} \mathcal{E}_2^2
 ```
