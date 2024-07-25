@@ -57,7 +57,7 @@ We implemented a singular procedure `Adet` to estimate the order $k$, which is i
 >  [i][2][j][2]: generators of $N_{ij}$
 > ```
 
-For example, a map-germ (x_1, x_2^4 + x_2^9 + x_1 x_2^2), the output should be like, 
+For example, a map-germ $(x_1, x_2^4 + x_2^9 + x_1 x_2^2)$, the output should be like, 
 ```Singular
 [1]:
    [1]:
