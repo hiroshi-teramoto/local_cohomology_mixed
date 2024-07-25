@@ -10,7 +10,7 @@ ring R = (0,a,b), (x(1..nx),y(1..ny)), (ws(1,1,1,2),c);
 
 The set of all the variables is {x(1..nx), y(1..ny)}, which corresponds to $\lbrace x_1, x_2, y_1, y_2 \rbrace$ where $x_1$ and $x_2$ are supposed to be the source variables and $y_1$ and $y_2$ are supposed to be the target variables.
 
-First, you need to specify the family of variables $(X_i)_{i \in J}$ characterizing the structure of a mixed-module you want to manipulate. In this implementation, $X_1$ is the set of all the variables in the base ring. In this example, that is {x(1..nx), y(1..ny)}. In case of $\mathcal{A}$-equivalence, the second component of the tangent space is the module over the ring of the target variables. To handle that situation, set $X_2 = \{ y_1, y_2 \}$. In the current implementation, X[i-1] = $X_i$ and the list of variables should be of type ideal. 
+First, you need to specify the family of variables $(X_i)_{i \in J}$ characterizing the structure of a mixed-module you want to manipulate. In this implementation, $X_1$ is the set of all the variables in the base ring. In this example, that is {x(1..nx), y(1..ny)}. In case of $\mathcal{A}$-equivalence, the second component of the tangent space is the module over the ring of the target variables. To handle that situation, set $X_2 = \lbrac y_1, y_2 \rbrac$. In the current implementation, X[i-1] = $X_i$ and the list of variables should be of type ideal. 
 
 ```Singular
 list X = list();
