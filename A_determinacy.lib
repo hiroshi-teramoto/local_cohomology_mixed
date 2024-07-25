@@ -27,9 +27,6 @@ proc Adet(list X, ideal E, ideal N, module TRnf, list Q)
 				M1 = TRnf + zero*freemodule(ny) + mx^(degAdet+1)*my*freemodule(ny)+mx^(2*degAdet+2)*freemodule(ny);
 				mkE = mx^(degAdet+1)*freemodule(ny);
 				Lg = local_cohomology_mixed_s(X,Ej,Nj,M1,Q,HJi);
-				// test
-				print("degAdet ="), degAdet;
-				Lg;
 
 				for(k=1;k<=size(Lg);k++){
 					Adet = 1;
