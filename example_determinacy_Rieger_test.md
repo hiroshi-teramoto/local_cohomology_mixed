@@ -44,39 +44,15 @@ We implemented a singular procedure `Adet` to estimate the order $k$, which is i
 > | --------- | ----------- |
 > | `X` | family of variables (Note that $X[i-1]$ corresponds to $X_i$ in TN2023) |
 > | `E`, `N` | ideals to specify the parameter range $V \left( E \right) \setminus V \left( N \right)$ in which comprehensive standard system is computed |
-> | `TR1K` | $\mathcal{A}_1$-tangent space of f + $<y_1 - f_1 (x), y_2 - f_2(x)> \mathcal{E}_2^2$ |
-> | `Q` | list of modules (`Q[1]` corresponds to $M_{i+1}$ in TN2023 for $i \ge 2$) |
+> | `TR1K` | $\mathcal{E}_2$-module part of the left hand side of the above equation + $<y_1 - f_1 (x), y_2 - f_2(x)> \mathcal{E}_2^2$ |
+> | `Q` | list of modules (`Q[1]` corresponds to $f^* \left( \mathcal{E}_2 \right)$-module of teh left hand side of teh above equation) |
 > #### Outputs
 > The format of LAdet is as follows:
 > ```Singular
-> [i]: information of mixed standard basis in the parameter range $V(E_i)\V(N_i)$.
->  [i][1]: generators of $E_i$
->  [i][2]: generators of $N_i$
->  [i][3]: $K$-basis of local cohomology of $M$ in the parameter range $V(E_i)\V(N_i)$.
->  [i][4]: set of monomials in ideal or module that is in $\mathrm{TCList}$ that is failed to be a head term of the local cohomology
+> [i]:
+>  [i][1]: order of determinacy in $i$-th strata
+>  [i][2]: list of strata
+>  [i][2][j]: information of $i$-th strata
+>  [i][2][j][1]: generators of $E_{ij}$
+>  [i][2][j][2]: generators of $N_{ij}$
 > ```
-
-The comprehensive mixed-standard system `Lg` can be used in the following functions implemented in local_cohomology_mixed.lib:
-> ```Singular
-> reduce_cohom(def p, def L)
-> ```
-> | Parameter | Description |
-> | --------- | ----------- |
-> | `p` | input poly or vector to be reduced |
-> | `L` | local cohomology for mixed module |
-> #### Output
-> - the reduced normal form of `p`, that is, $\mathrm{NF} \_{\textnormal{tail}} \left( p \middle| \left( S^{\left( j \right)} \right)_{j \in J} \right)$ in TN2023.
-> #### Example
-> Suppose `p` is a vector you want to reduce by the comprehensive standard system of the $i$-th parameter range $V(E_i) \setminus V(N_i)$, that is, `Lg[i]`. You can compute that by the command `reduce_mixed_with_E(X,p,Lg[i][3][3],Lg[i][4],Lg[i][3][1])`.
-
-> ```Singular
-> kbase_mixed(list X, list Lgi)
-> ```
-> | Parameter | Description |
-> | --------- | ----------- |
-> | `X` | family of variables (Note that X[i-1] = $X_i$ in TN2023) |
-> | `Lgi` | list of mixed standard basis in the $i$-th parameter range (`Lg[i]`) |
-> #### Outputs
-> - set of monomials not $X_i$-involutive multiple of $S^{(i)}$ for all $i \in J$
-> #### Example
-> The command `kbase_mixed(X,Lg[i])` outputs the set of monomials not $X_i$-involutive multiple of $S^{(i)}$ for all $i \in J$. The set is the basis of the quotient regarded as a $K$-vector space.
