@@ -58,6 +58,7 @@ We implemented a singular procedure `Adet` to estimate the order $k$, which is i
 > ```
 
 For example, a map-germ (x_1, x_2^4 + x_2^9 + x_1 x_2^2), the output should be like, 
+```Singular
 [1]:
    [1]:
       9
@@ -67,3 +68,4 @@ For example, a map-germ (x_1, x_2^4 + x_2^9 + x_1 x_2^2), the output should be l
             _[1]=0
          [2]:
             _[1]=1
+```
