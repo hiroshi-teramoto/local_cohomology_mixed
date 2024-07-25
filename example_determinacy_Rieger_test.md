@@ -1,4 +1,4 @@
-Let us explain how to use the library by taking Rieger's $\mathcal{A}$-classification of plane to plane map-germs as an example.
+Let us explain how to estimate the order of $\mathcal{A}$-determinacy by taking Rieger's $\mathcal{A}$-classification of plane to plane map-germs as an example.
 
 In this example, the definition of the base ring is as follows: 
 
