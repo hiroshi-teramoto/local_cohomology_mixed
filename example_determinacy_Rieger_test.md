@@ -69,3 +69,4 @@ For example, a map-germ $(x_1, x_2^4 + x_2^9 + x_1 x_2^2)$, the output should be
          [2]:
             _[1]=1
 ```
+, which implies that there exists only one strata (in this case, there is no paramaeter involved) on which the given map-germ is $9$-$\mathcal{A}$-determined. If the map-germ have several parameters, the parameter space may be decomposed into several strata. If the given map-germ is not finitely determined, the procedure does not stop.
